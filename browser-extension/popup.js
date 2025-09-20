@@ -335,6 +335,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let folders = [];
         let isDropdownOpen = true; // Start with dropdown open
         
+        // Show loading state
+        folderList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Loading folders...</div>';
+        
         // Load folders
         await loadFolders();
         
@@ -378,13 +381,39 @@ document.addEventListener('DOMContentLoaded', function() {
         
         async function loadFolders() {
             try {
+                // Check if extension context is valid
+                if (!chrome.runtime?.id) {
+                    throw new Error('Extension context invalidated');
+                }
+                
                 const response = await chrome.runtime.sendMessage({ action: 'getBookmarkFolders' });
-                if (response && response.folders) {
+                console.log('Folder response:', response);
+                
+                if (response && response.success && response.folders) {
                     folders = response.folders;
+                    console.log('Loaded folders:', folders);
+                    renderFolders();
+                } else {
+                    console.error('Failed to load folders:', response);
+                    // Show fallback with default suggestions
+                    folders = [
+                        { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                        { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                        { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                        { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+                    ];
                     renderFolders();
                 }
             } catch (error) {
                 console.error('Error loading folders:', error);
+                // Show fallback with default suggestions
+                folders = [
+                    { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+                ];
+                renderFolders();
             }
         }
         
