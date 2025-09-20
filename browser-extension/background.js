@@ -63,6 +63,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             .catch(error => sendResponse({ error: error.message }));
         return true;
     }
+    
+    if (request.action === 'getBookmarkFolders') {
+        getBookmarkFolders()
+            .then(result => sendResponse(result))
+            .catch(error => sendResponse({ error: error.message }));
+        return true;
+    }
 });
 
 // Bookmark current page
@@ -214,6 +221,40 @@ async function processAndBookmark(data) {
             folderName: folderName,
             errors: errors
         };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Get all bookmark folders
+async function getBookmarkFolders() {
+    try {
+        const bookmarkTree = await chrome.bookmarks.getTree();
+        const folders = [];
+        
+        // Recursively find all folders
+        function findFolders(nodes) {
+            for (const node of nodes) {
+                if (node.children && !node.url) {
+                    // This is a folder
+                    folders.push({
+                        id: node.id,
+                        title: node.title,
+                        children: node.children.filter(child => child.url) // Only count actual bookmarks
+                    });
+                    
+                    // Recursively find subfolders
+                    findFolders(node.children);
+                }
+            }
+        }
+        
+        findFolders(bookmarkTree);
+        
+        // Sort folders by name
+        folders.sort((a, b) => a.title.localeCompare(b.title));
+        
+        return { success: true, folders: folders };
     } catch (error) {
         return { success: false, error: error.message };
     }

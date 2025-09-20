@@ -92,98 +92,205 @@ async function bookmarkCurrentPage() {
     }
 }
 
-// Show folder selection dialog
+// Show smart folder selection dialog
 function showFolderSelectionDialog() {
     return new Promise((resolve) => {
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 10002;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-        
-        // Create modal
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-            width: 90%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        `;
-        
-        modal.innerHTML = `
-            <h3 style="margin: 0 0 20px 0; color: #333; font-size: 18px;">📁 Choose Bookmark Folder</h3>
-            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Where would you like to save this bookmark?</p>
-            <input type="text" id="folderName" placeholder="Enter folder name..." 
-                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 20px; box-sizing: border-box;"
-                   value="My Bookmarks">
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button id="cancelBtn" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel</button>
-                <button id="saveBtn" style="padding: 10px 20px; border: none; background: #4facfe; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">Save Bookmark</button>
-            </div>
-        `;
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-        
-        // Focus input
-        const input = modal.querySelector('#folderName');
-        input.focus();
-        input.select();
-        
-        // Handle events
-        const cancelBtn = modal.querySelector('#cancelBtn');
-        const saveBtn = modal.querySelector('#saveBtn');
-        
-        const cleanup = () => {
-            document.body.removeChild(overlay);
-        };
-        
-        cancelBtn.addEventListener('click', () => {
-            cleanup();
-            resolve(null);
-        });
-        
-        saveBtn.addEventListener('click', () => {
-            const folderName = input.value.trim() || 'My Bookmarks';
-            cleanup();
-            resolve(folderName);
-        });
-        
-        // Handle Enter key
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const folderName = input.value.trim() || 'My Bookmarks';
+        // Get existing folders first
+        chrome.runtime.sendMessage({ action: 'getBookmarkFolders' }, (response) => {
+            if (!response || !response.folders) {
+                response = { folders: [] };
+            }
+            
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10002;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            `;
+            
+            // Generate folder options HTML
+            const folderOptions = response.folders.map(folder => 
+                `<div class="folder-option" data-folder="${folder.title}" style="padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 16px;">📁</span>
+                    <span style="flex: 1; font-size: 14px; color: #333;">${folder.title}</span>
+                    <span style="font-size: 12px; color: #666; background: #f0f0f0; padding: 2px 8px; border-radius: 12px;">${folder.children ? folder.children.length : 0} bookmarks</span>
+                </div>`
+            ).join('');
+            
+            modal.innerHTML = `
+                <h3 style="margin: 0 0 20px 0; color: #333; font-size: 18px;">📁 Choose Bookmark Folder</h3>
+                <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Select an existing folder or create a new one</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="folderSearch" placeholder="Search folders or type new folder name..." 
+                               style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                        <button id="createNewBtn" style="padding: 12px 20px; border: none; background: #28a745; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; white-space: nowrap;">
+                            ➕ New Folder
+                        </button>
+                    </div>
+                    
+                    <div id="folderList" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
+                        ${folderOptions}
+                        <div id="noFolders" style="text-align: center; color: #666; padding: 20px; font-style: italic; display: ${response.folders.length === 0 ? 'block' : 'none'};">
+                            No folders found. Create a new one above!
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="cancelBtn" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel</button>
+                    <button id="saveBtn" style="padding: 10px 20px; border: none; background: #4facfe; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">Save Bookmark</button>
+                </div>
+            `;
+            
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            
+            // Get elements
+            const searchInput = modal.querySelector('#folderSearch');
+            const folderList = modal.querySelector('#folderList');
+            const noFolders = modal.querySelector('#noFolders');
+            const createNewBtn = modal.querySelector('#createNewBtn');
+            const cancelBtn = modal.querySelector('#cancelBtn');
+            const saveBtn = modal.querySelector('#saveBtn');
+            const folderOptions = modal.querySelectorAll('.folder-option');
+            
+            let selectedFolder = null;
+            let isCreatingNew = false;
+            
+            // Focus search input
+            searchInput.focus();
+            
+            // Search functionality
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                let hasVisibleFolders = false;
+                
+                folderOptions.forEach(option => {
+                    const folderName = option.dataset.folder.toLowerCase();
+                    if (folderName.includes(searchTerm)) {
+                        option.style.display = 'flex';
+                        hasVisibleFolders = true;
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+                
+                noFolders.style.display = hasVisibleFolders ? 'none' : 'block';
+                
+                // If typing something new, show create new option
+                if (searchTerm && !response.folders.some(f => f.title.toLowerCase() === searchTerm)) {
+                    isCreatingNew = true;
+                    selectedFolder = searchTerm;
+                } else {
+                    isCreatingNew = false;
+                    selectedFolder = null;
+                }
+            });
+            
+            // Folder selection
+            folderOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove previous selection
+                    folderOptions.forEach(opt => opt.style.background = 'white');
+                    
+                    // Select this folder
+                    option.style.background = '#e3f2fd';
+                    option.style.borderColor = '#4facfe';
+                    selectedFolder = option.dataset.folder;
+                    isCreatingNew = false;
+                    searchInput.value = selectedFolder;
+                });
+                
+                // Hover effects
+                option.addEventListener('mouseenter', () => {
+                    if (option.style.background !== '#e3f2fd') {
+                        option.style.background = '#f8f9fa';
+                    }
+                });
+                
+                option.addEventListener('mouseleave', () => {
+                    if (option.style.background !== '#e3f2fd') {
+                        option.style.background = 'white';
+                    }
+                });
+            });
+            
+            // Create new folder
+            createNewBtn.addEventListener('click', () => {
+                const newFolderName = searchInput.value.trim();
+                if (newFolderName) {
+                    selectedFolder = newFolderName;
+                    isCreatingNew = true;
+                    saveBtn.click();
+                } else {
+                    searchInput.focus();
+                }
+            });
+            
+            // Handle events
+            const cleanup = () => {
+                document.body.removeChild(overlay);
+            };
+            
+            cancelBtn.addEventListener('click', () => {
+                cleanup();
+                resolve(null);
+            });
+            
+            saveBtn.addEventListener('click', () => {
+                const folderName = selectedFolder || searchInput.value.trim() || 'My Bookmarks';
                 cleanup();
                 resolve(folderName);
-            }
-        });
-        
-        // Handle Escape key
-        overlay.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                cleanup();
-                resolve(null);
-            }
-        });
-        
-        // Handle click outside
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                cleanup();
-                resolve(null);
-            }
+            });
+            
+            // Handle Enter key
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const folderName = selectedFolder || searchInput.value.trim() || 'My Bookmarks';
+                    cleanup();
+                    resolve(folderName);
+                }
+            });
+            
+            // Handle Escape key
+            overlay.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    cleanup();
+                    resolve(null);
+                }
+            });
+            
+            // Handle click outside
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    cleanup();
+                    resolve(null);
+                }
+            });
         });
     });
 }
