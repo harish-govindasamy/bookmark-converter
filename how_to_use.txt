@@ -1,0 +1,7 @@
+How to use:
+
+Save your URLs in a text file (one URL per line)
+
+Run: python bookmark-converter.py your_urls.txt bookmarks.html
+
+Import the generated HTML file into your browser
