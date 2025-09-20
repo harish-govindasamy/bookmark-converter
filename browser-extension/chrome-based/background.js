@@ -1,62 +1,41 @@
-// Universal Background script for Bookmark Converter Pro Extension
-// Supports Chrome, Edge, Firefox, Safari, and other Chromium-based browsers
+// Background script for Bookmark Converter Pro Extension (Chrome-based browsers)
+// Supports Chrome, Edge, Brave, Opera, Vivaldi with Manifest V3
 
-// Browser detection and API compatibility
-const BrowserAPI = (() => {
-    // Detect browser
-    const isChrome = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onInstalled;
-    const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.onInstalled;
-    const isEdge = isChrome && navigator.userAgent.includes('Edg');
-    const isSafari = typeof safari !== 'undefined';
-    
-    // Use appropriate API
-    const api = isFirefox ? browser : chrome;
-    
-    return {
-        api: api,
-        isChrome: isChrome,
-        isFirefox: isFirefox,
-        isEdge: isEdge,
-        isSafari: isSafari,
-        browserName: isFirefox ? 'Firefox' : (isEdge ? 'Edge' : (isSafari ? 'Safari' : 'Chrome'))
-    };
-})();
-
-console.log(`Bookmark Converter Pro universal background script starting for ${BrowserAPI.browserName}...`);
+console.log('Bookmark Converter Pro Chrome-based background script starting...');
 
 // Handle extension installation
-BrowserAPI.api.runtime.onInstalled.addListener((details) => {
+chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') {
-        console.log(`Bookmark Converter Pro installed on ${BrowserAPI.browserName}`);
+        console.log('Bookmark Converter Pro installed on Chrome-based browser');
         
         // Set default settings
-        BrowserAPI.api.storage.local.set({
+        chrome.storage.local.set({
             lastFolderName: 'My Bookmarks',
             extensionVersion: '1.0.0',
-            browserType: BrowserAPI.browserName
+            browserType: 'Chrome-based'
         });
         
         // Open welcome page
-        BrowserAPI.api.tabs.create({
+        chrome.tabs.create({
             url: 'https://bookmark-converter-8okt.onrender.com'
         });
     } else if (details.reason === 'update') {
-        console.log(`Bookmark Converter Pro updated on ${BrowserAPI.browserName}`);
+        console.log('Bookmark Converter Pro updated on Chrome-based browser');
     }
 });
 
 // Handle keyboard shortcuts
-BrowserAPI.api.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener((command) => {
     if (command === 'open-bookmark-converter') {
         // Open the extension popup or web app
-        BrowserAPI.api.tabs.create({
+        chrome.tabs.create({
             url: 'https://bookmark-converter-8okt.onrender.com'
         });
     }
 });
 
 // Handle messages from content scripts and popup
-BrowserAPI.api.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Message received:', request.action);
     
     if (request.action === 'bookmarkCurrentPage') {
@@ -95,31 +74,17 @@ BrowserAPI.api.runtime.onMessage.addListener((request, sender, sendResponse) => 
     }
 });
 
-// Get the correct bookmark bar ID for different browsers
-function getBookmarkBarId() {
-    if (BrowserAPI.isFirefox) {
-        return 'toolbar_____'; // Firefox bookmark toolbar
-    } else {
-        return '1'; // Chrome/Edge/Safari bookmarks bar
-    }
-}
-
 // Bookmark current page
 async function bookmarkCurrentPage(tab) {
     try {
-        const invalidProtocols = BrowserAPI.isFirefox ? 
-            ['about:', 'moz-extension:'] : 
-            ['chrome:', 'moz-extension:', 'edge:'];
-            
-        if (!tab.url || invalidProtocols.some(protocol => tab.url.startsWith(protocol))) {
+        if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('moz-extension://') || tab.url.startsWith('edge://')) {
             throw new Error('Cannot bookmark this page');
         }
         
         const title = tab.title || new URL(tab.url).hostname;
-        const bookmarkBarId = getBookmarkBarId();
         
-        const bookmark = await BrowserAPI.api.bookmarks.create({
-            parentId: bookmarkBarId,
+        const bookmark = await chrome.bookmarks.create({
+            parentId: '1', // Chrome/Edge bookmarks bar
             title: title,
             url: tab.url,
             index: 0 // Add at the beginning (top) instead of end
@@ -134,33 +99,28 @@ async function bookmarkCurrentPage(tab) {
 // Bookmark current page with folder
 async function bookmarkCurrentPageWithFolder(tab, folderName) {
     try {
-        const invalidProtocols = BrowserAPI.isFirefox ? 
-            ['about:', 'moz-extension:'] : 
-            ['chrome:', 'moz-extension:', 'edge:'];
-            
-        if (!tab.url || invalidProtocols.some(protocol => tab.url.startsWith(protocol))) {
+        if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('moz-extension://') || tab.url.startsWith('edge://')) {
             throw new Error('Cannot bookmark this page');
         }
         
         const title = tab.title || new URL(tab.url).hostname;
-        const bookmarkBarId = getBookmarkBarId();
         
         // Check if folder already exists
         let folder = null;
-        const bookmarks = await BrowserAPI.api.bookmarks.getChildren(bookmarkBarId);
+        const bookmarks = await chrome.bookmarks.getChildren('1'); // Get bookmarks bar children
         folder = bookmarks.find(b => b.title === folderName && !b.url);
         
         // Create folder if it doesn't exist
         if (!folder) {
-            folder = await BrowserAPI.api.bookmarks.create({
+            folder = await chrome.bookmarks.create({
                 title: folderName,
-                parentId: bookmarkBarId,
+                parentId: '1',
                 index: 0 // Add folder at the beginning (top)
             });
         }
         
         // Add bookmark to folder
-        const bookmark = await BrowserAPI.api.bookmarks.create({
+        const bookmark = await chrome.bookmarks.create({
             parentId: folder.id,
             title: title,
             url: tab.url,
@@ -176,13 +136,12 @@ async function bookmarkCurrentPageWithFolder(tab, folderName) {
 // Bookmark all open tabs
 async function bookmarkAllTabs() {
     try {
-        const tabs = await BrowserAPI.api.tabs.query({ currentWindow: true });
-        const invalidProtocols = BrowserAPI.isFirefox ? 
-            ['about:', 'moz-extension:'] : 
-            ['chrome:', 'moz-extension:', 'edge:'];
-            
+        const tabs = await chrome.tabs.query({ currentWindow: true });
         const validTabs = tabs.filter(tab => 
-            tab.url && !invalidProtocols.some(protocol => tab.url.startsWith(protocol))
+            tab.url && 
+            !tab.url.startsWith('chrome://') && 
+            !tab.url.startsWith('moz-extension://') &&
+            !tab.url.startsWith('edge://')
         );
         
         if (validTabs.length === 0) {
@@ -190,11 +149,9 @@ async function bookmarkAllTabs() {
         }
         
         const folderName = `All Tabs - ${new Date().toLocaleDateString()}`;
-        const bookmarkBarId = getBookmarkBarId();
-        
-        const folder = await BrowserAPI.api.bookmarks.create({
+        const folder = await chrome.bookmarks.create({
             title: folderName,
-            parentId: bookmarkBarId,
+            parentId: '1',
             index: 0 // Add folder at the beginning (top) instead of end
         });
         
@@ -204,7 +161,7 @@ async function bookmarkAllTabs() {
         for (const tab of validTabs) {
             try {
                 const title = tab.title || new URL(tab.url).hostname;
-                await BrowserAPI.api.bookmarks.create({
+                await chrome.bookmarks.create({
                     parentId: folder.id,
                     title: title,
                     url: tab.url,
@@ -237,12 +194,10 @@ async function processAndBookmark(data) {
             throw new Error('No valid URLs found');
         }
         
-        const bookmarkBarId = getBookmarkBarId();
-        
         // Create folder
-        const folder = await BrowserAPI.api.bookmarks.create({
+        const folder = await chrome.bookmarks.create({
             title: folderName || 'My Bookmarks',
-            parentId: bookmarkBarId,
+            parentId: '1',
             index: 0 // Add folder at the beginning (top) instead of end
         });
         
@@ -252,7 +207,7 @@ async function processAndBookmark(data) {
         
         for (const urlData of processedUrls) {
             try {
-                await BrowserAPI.api.bookmarks.create({
+                await chrome.bookmarks.create({
                     parentId: folder.id,
                     title: urlData.title,
                     url: urlData.url,
@@ -278,12 +233,11 @@ async function processAndBookmark(data) {
 // Get bookmark bar folders (main folders users see)
 async function getBookmarkFolders() {
     try {
-        const bookmarkTree = await BrowserAPI.api.bookmarks.getTree();
+        const bookmarkTree = await chrome.bookmarks.getTree();
         const folders = [];
-        const bookmarkBarId = getBookmarkBarId();
         
-        // Get bookmark bar - this is what users see in their browser
-        const bookmarkBar = bookmarkTree[0]?.children?.find(node => node.id === bookmarkBarId);
+        // Get bookmark bar (id: "1") - this is what users see in their browser
+        const bookmarkBar = bookmarkTree[0]?.children?.find(node => node.id === "1");
         
         if (bookmarkBar && bookmarkBar.children) {
             // Find folders in bookmark bar
@@ -314,9 +268,9 @@ async function getBookmarkFolders() {
         // Sort folders by name
         folders.sort((a, b) => a.title.localeCompare(b.title));
         
-        return { success: true, folders: folders, browser: BrowserAPI.browserName };
+        return { success: true, folders: folders, browser: 'Chrome-based' };
     } catch (error) {
-        return { success: false, error: error.message, browser: BrowserAPI.browserName };
+        return { success: false, error: error.message, browser: 'Chrome-based' };
     }
 }
 
@@ -363,25 +317,25 @@ function processUrls(urlsText) {
 }
 
 // Handle bookmark events for analytics
-BrowserAPI.api.bookmarks.onCreated.addListener((id, bookmark) => {
+chrome.bookmarks.onCreated.addListener((id, bookmark) => {
     console.log('Bookmark created:', bookmark.title);
 });
 
-BrowserAPI.api.bookmarks.onRemoved.addListener((id, removeInfo) => {
+chrome.bookmarks.onRemoved.addListener((id, removeInfo) => {
     console.log('Bookmark removed:', removeInfo.node.title);
 });
 
 // Context menu integration
-BrowserAPI.api.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(() => {
     // Create context menu for bookmarking
     try {
-        BrowserAPI.api.contextMenus.create({
+        chrome.contextMenus.create({
             id: 'bookmarkWithConverter',
             title: 'Bookmark with Converter Pro',
             contexts: ['page', 'link']
         });
         
-        BrowserAPI.api.contextMenus.create({
+        chrome.contextMenus.create({
             id: 'bookmarkAllTabs',
             title: 'Bookmark All Tabs',
             contexts: ['page']
@@ -392,14 +346,13 @@ BrowserAPI.api.runtime.onInstalled.addListener(() => {
 });
 
 // Handle context menu clicks
-BrowserAPI.api.contextMenus.onClicked.addListener(async (info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     try {
         if (info.menuItemId === 'bookmarkWithConverter') {
             if (info.linkUrl) {
                 // Bookmark the link
-                const bookmarkBarId = getBookmarkBarId();
-                await BrowserAPI.api.bookmarks.create({
-                    parentId: bookmarkBarId,
+                await chrome.bookmarks.create({
+                    parentId: '1',
                     title: info.linkText || new URL(info.linkUrl).hostname,
                     url: info.linkUrl,
                     index: 0 // Add at the beginning (top) instead of end

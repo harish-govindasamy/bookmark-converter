@@ -1,28 +1,4 @@
-// Universal Popup script for Bookmark Converter Pro Extension
-// Supports Chrome, Edge, Firefox, Safari, and other Chromium-based browsers
-
-// Browser detection and API compatibility
-const BrowserAPI = (() => {
-    // Detect browser
-    const isChrome = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onInstalled;
-    const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.onInstalled;
-    const isEdge = isChrome && navigator.userAgent.includes('Edg');
-    const isSafari = typeof safari !== 'undefined';
-    
-    // Use appropriate API
-    const api = isFirefox ? browser : chrome;
-    
-    return {
-        api: api,
-        isChrome: isChrome,
-        isFirefox: isFirefox,
-        isEdge: isEdge,
-        isSafari: isSafari,
-        browserName: isFirefox ? 'Firefox' : (isEdge ? 'Edge' : (isSafari ? 'Safari' : 'Chrome'))
-    };
-})();
-
-console.log(`Bookmark Converter Pro universal popup script starting for ${BrowserAPI.browserName}...`);
+// Popup script for Bookmark Converter Pro Extension (Firefox)
 
 document.addEventListener('DOMContentLoaded', function() {
     // Get elements
@@ -30,12 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const folderNameInput = document.getElementById('folderName');
     const bookmarkBtn = document.getElementById('bookmarkBtn');
     const openWebAppBtn = document.getElementById('openWebApp');
-    const browserInfo = document.getElementById('browserInfo');
-    
-    // Show browser info
-    if (browserInfo) {
-        browserInfo.textContent = `Running on ${BrowserAPI.browserName}`;
-    }
     
     // Load saved settings
     loadSettings();
@@ -50,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load saved settings
     async function loadSettings() {
         try {
-            const result = await BrowserAPI.api.storage.local.get(['lastFolderName']);
+            const result = await browser.storage.local.get(['lastFolderName']);
             if (result.lastFolderName) {
                 folderNameInput.value = result.lastFolderName;
             }
@@ -62,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Save settings
     async function saveSettings() {
         try {
-            await BrowserAPI.api.storage.local.set({
+            await browser.storage.local.set({
                 lastFolderName: folderNameInput.value
             });
         } catch (error) {
@@ -88,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             await saveSettings();
             
             // Process and bookmark
-            const response = await BrowserAPI.api.runtime.sendMessage({
+            const response = await browser.runtime.sendMessage({
                 action: 'processAndBookmark',
                 data: {
                     urls: urls,
@@ -113,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Open web app
     function openWebAppAction() {
-        BrowserAPI.api.tabs.create({ url: 'https://bookmark-converter-8okt.onrender.com' });
+        browser.tabs.create({ url: 'https://bookmark-converter-8okt.onrender.com' });
         window.close();
     }
     
@@ -175,11 +145,11 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadFolders() {
             try {
                 // Check if extension context is valid
-                if (!BrowserAPI.api.runtime?.id) {
+                if (!browser.runtime?.id) {
                     throw new Error('Extension context invalidated');
                 }
                 
-                const response = await BrowserAPI.api.runtime.sendMessage({ action: 'getBookmarkFolders' });
+                const response = await browser.runtime.sendMessage({ action: 'getBookmarkFolders' });
                 console.log('Folder response:', response);
                 
                 if (response && response.success && response.folders) {

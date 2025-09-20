@@ -1,28 +1,4 @@
-// Universal Content script for Bookmark Converter Pro Extension
-// Supports Chrome, Edge, Firefox, Safari, and other Chromium-based browsers
-
-// Browser detection and API compatibility
-const BrowserAPI = (() => {
-    // Detect browser
-    const isChrome = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onInstalled;
-    const isFirefox = typeof browser !== 'undefined' && browser.runtime && browser.runtime.onInstalled;
-    const isEdge = isChrome && navigator.userAgent.includes('Edg');
-    const isSafari = typeof safari !== 'undefined';
-    
-    // Use appropriate API
-    const api = isFirefox ? browser : chrome;
-    
-    return {
-        api: api,
-        isChrome: isChrome,
-        isFirefox: isFirefox,
-        isEdge: isEdge,
-        isSafari: isSafari,
-        browserName: isFirefox ? 'Firefox' : (isEdge ? 'Edge' : (isSafari ? 'Safari' : 'Chrome'))
-    };
-})();
-
-console.log(`Bookmark Converter Pro universal content script starting for ${BrowserAPI.browserName}...`);
+// Content script for Bookmark Converter Pro Extension (Firefox)
 
 // Inject bookmark button into pages
 function injectBookmarkButton() {
@@ -32,11 +8,8 @@ function injectBookmarkButton() {
     }
     
     // Only inject on valid pages
-    const invalidProtocols = BrowserAPI.isFirefox ? 
-        ['about:', 'moz-extension:'] : 
-        ['chrome:', 'moz-extension:', 'edge:'];
-        
-    if (invalidProtocols.some(protocol => window.location.protocol === protocol)) {
+    if (window.location.protocol === 'about:' || 
+        window.location.protocol === 'moz-extension:') {
         return;
     }
     
@@ -97,7 +70,7 @@ function injectBookmarkButton() {
 async function bookmarkCurrentPage() {
     try {
         // Check if extension context is still valid
-        if (!BrowserAPI.api.runtime?.id) {
+        if (!browser.runtime?.id) {
             showNotification('❌ Extension context invalidated. Please reload the page.', 'error');
             return;
         }
@@ -108,7 +81,7 @@ async function bookmarkCurrentPage() {
             return; // User cancelled
         }
         
-        const response = await BrowserAPI.api.runtime.sendMessage({
+        const response = await browser.runtime.sendMessage({
             action: 'bookmarkCurrentPageWithFolder',
             folderName: folderName
         });
@@ -139,10 +112,10 @@ function showFolderSelectionDialog() {
         }
         
         // Get existing folders first
-        BrowserAPI.api.runtime.sendMessage({ action: 'getBookmarkFolders' }, (response) => {
+        browser.runtime.sendMessage({ action: 'getBookmarkFolders' }, (response) => {
             // Handle extension context invalidation
-            if (BrowserAPI.api.runtime.lastError) {
-                console.error('Extension context error:', BrowserAPI.api.runtime.lastError);
+            if (browser.runtime.lastError) {
+                console.error('Extension context error:', browser.runtime.lastError);
                 resolve(null);
                 return;
             }
@@ -442,7 +415,7 @@ new MutationObserver(() => {
 }).observe(document, { subtree: true, childList: true });
 
 // Listen for messages from popup
-BrowserAPI.api.runtime.onMessage.addListener((request, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'bookmarkCurrentPage') {
         bookmarkCurrentPage();
         sendResponse({ success: true });

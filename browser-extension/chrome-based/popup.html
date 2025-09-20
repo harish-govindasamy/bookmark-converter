@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmark Converter Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 400px;
+            min-height: 500px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .quick-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+        
+        .quick-actions h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .quick-btn {
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quick-btn:hover {
+            background: #e9ecef;
+            border-color: #4facfe;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .feature-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        /* Folder Selector Styles */
+        .folder-selector {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .folder-selector input {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+        
+        .dropdown-btn {
+            background: #4facfe;
+            color: white;
+            border: 2px solid #4facfe;
+            border-left: none;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-btn:hover {
+            background: #3d8bfe;
+            border-color: #3d8bfe;
+        }
+        
+        .folder-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #e8e8e8;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .folder-list {
+            padding: 8px;
+        }
+        
+        .folder-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .folder-item:hover {
+            background: #f0f8ff;
+        }
+        
+        .folder-item.selected {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .folder-icon {
+            font-size: 14px;
+        }
+        
+        .folder-name {
+            flex: 1;
+            font-size: 13px;
+        }
+        
+        .folder-count {
+            font-size: 11px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .folder-actions {
+            padding: 8px;
+            border-top: 1px solid #e8e8e8;
+        }
+        
+        .create-btn {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .create-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔖 Bookmark Converter Pro</h1>
+            <p>Smart bookmark management with direct browser integration</p>
+        </div>
+        
+        <div class="content">
+            <form id="bookmarkForm">
+                <div class="form-group">
+                    <label for="folderName">📁 Choose Folder:</label>
+                    <div class="folder-selector">
+                        <input type="text" id="folderName" placeholder="Search folders or type new name..." readonly>
+                        <button id="folderDropdownBtn" class="dropdown-btn">▼</button>
+                    </div>
+                    <div id="folderDropdown" class="folder-dropdown" style="display: block;">
+                        <div class="folder-list">
+                            <div style="text-align: center; padding: 20px; color: #666;">
+                                <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
+                                <div style="font-weight: 600; margin-bottom: 5px;">Loading folders...</div>
+                                <div style="font-size: 12px;">Please wait</div>
+                            </div>
+                        </div>
+                        <div class="folder-actions">
+                            <button id="createNewFolder" class="create-btn">➕ Create New Folder</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="urls">URLs (one per line):</label>
+                    <textarea id="urls" placeholder="Paste your URLs here, one per line...&#10;&#10;✨ SMART PROCESSING: Automatically cleans messy text!&#10;&#10;Examples:&#10;https://www.google.com&#10;→ Toptal (toptal.com)&#10;github.com&#10;Remote OK (remoteok.com)"></textarea>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" id="addBookmarksBtn">
+                        🚀 Add to Browser
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="downloadBtn">
+                        📥 Download HTML
+                    </button>
+                </div>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing bookmarks...</p>
+            </div>
+            
+            <div class="status" id="status"></div>
+            
+            <div class="quick-actions">
+                <h3>⚡ Quick Actions</h3>
+                <button class="quick-btn" id="bookmarkCurrentPage">
+                    📌 Bookmark Current Page
+                </button>
+                <button class="quick-btn" id="bookmarkAllTabs">
+                    📚 Bookmark All Open Tabs
+                </button>
+                <button class="quick-btn" id="openWebApp">
+                    🌐 Open Web App
+                </button>
+                <button class="quick-btn" id="manageBookmarks">
+                    ⚙️ Manage Bookmarks
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

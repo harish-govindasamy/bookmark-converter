@@ -1,8 +1,8 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Bookmark Converter Pro",
   "version": "1.0.0",
-  "description": "Convert URLs to organized bookmarks with smart processing and direct browser integration - Universal Browser Support",
+  "description": "Convert URLs to organized bookmarks with smart processing and direct browser integration - Chrome/Edge/Brave/Opera/Vivaldi",
   
   "permissions": [
     "bookmarks",
@@ -12,21 +12,25 @@
     "contextMenus"
   ],
   
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  
   "background": {
-    "scripts": ["background-universal.js"],
-    "persistent": false
+    "service_worker": "background.js"
   },
   
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content-universal.js"],
+      "js": ["content.js"],
       "run_at": "document_end"
     }
   ],
   
-  "browser_action": {
-    "default_popup": "popup-universal.html",
+  "action": {
+    "default_popup": "popup.html",
     "default_title": "Bookmark Converter Pro",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -44,14 +48,17 @@
   },
   
   "web_accessible_resources": [
-    "popup-universal.html",
-    "icons/*"
+    {
+      "resources": ["popup.html", "icons/*"],
+      "matches": ["<all_urls>"]
+    }
   ],
   
   "commands": {
     "open-bookmark-converter": {
       "suggested_key": {
-        "default": "Ctrl+Shift+B"
+        "default": "Ctrl+Shift+B",
+        "mac": "Command+Shift+B"
       },
       "description": "Open Bookmark Converter"
     }

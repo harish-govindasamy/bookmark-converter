@@ -1,162 +1,198 @@
-# Bookmark Converter Pro - Browser Extension
+# 🔖 Bookmark Converter Pro - Browser Extensions
 
-A powerful browser extension that allows users to convert URLs to organized bookmarks with smart processing and direct browser integration.
+## 📁 Extension Organization
 
-## Features
-
-### 🚀 Core Features
-- **Smart URL Processing** - Automatically cleans messy text and adds https://
-- **Direct Browser Integration** - Add bookmarks directly without manual import
-- **Multiple Folder Support** - Organize bookmarks into custom folders
-- **Bulk Operations** - Process multiple URLs at once
-- **Cross-Browser Support** - Works on Chrome, Firefox, Edge, and Safari
-
-### ⚡ Quick Actions
-- **Bookmark Current Page** - One-click bookmarking
-- **Bookmark All Tabs** - Save all open tabs as bookmarks
-- **Floating Bookmark Button** - Quick access on any webpage
-- **Keyboard Shortcuts** - Ctrl+Shift+B for quick bookmarking
-- **Context Menu Integration** - Right-click to bookmark
-
-### 🎨 User Experience
-- **Beautiful UI** - Modern glassmorphism design
-- **Smart Processing** - Handles messy text input automatically
-- **Real-time Feedback** - Instant success/error notifications
-- **Settings Persistence** - Remembers your preferences
-- **Mobile Responsive** - Works on all devices
-
-## Installation
-
-### For Developers (Chrome/Edge)
-1. Download or clone this extension
-2. Open Chrome/Edge and go to `chrome://extensions/`
-3. Enable "Developer mode"
-4. Click "Load unpacked" and select the extension folder
-5. The extension will appear in your toolbar
-
-### For Developers (Firefox)
-1. Download or clone this extension
-2. Open Firefox and go to `about:debugging`
-3. Click "This Firefox"
-4. Click "Load Temporary Add-on"
-5. Select the `manifest.json` file
-
-### For Users (Chrome Web Store)
-*Coming soon - will be published to Chrome Web Store*
-
-## Usage
-
-### Basic Bookmarking
-1. Click the extension icon in your toolbar
-2. Enter a folder name (optional)
-3. Paste your URLs (one per line)
-4. Click "🚀 Add to Browser"
-5. Your bookmarks will be added directly to your browser!
-
-### Quick Actions
-- **Floating Button**: Click the floating bookmark button on any webpage
-- **Keyboard Shortcut**: Press `Ctrl+Shift+B` to bookmark current page
-- **Context Menu**: Right-click on any page and select "Bookmark with Converter Pro"
-- **All Tabs**: Use "Bookmark All Tabs" to save all open tabs
-
-### Smart URL Processing
-The extension automatically:
-- Removes bullet points, arrows, and numbering
-- Extracts clean URLs from messy text
-- Adds `https://` to domain names
-- Creates meaningful titles from URLs
-
-## File Structure
+This directory contains browser extensions organized by browser type and manifest version:
 
 ```
 browser-extension/
-├── manifest.json          # Extension configuration
-├── popup.html            # Extension popup UI
-├── popup.js              # Popup functionality
-├── background.js         # Background service worker
-├── content.js            # Content script for page interaction
-├── icons/                # Extension icons
-│   ├── icon16.png        # 16x16 icon
-│   ├── icon32.png        # 32x32 icon
-│   ├── icon48.png        # 48x48 icon
-│   ├── icon128.png       # 128x128 icon
-│   └── icon.svg          # Source SVG icon
-├── generate-icons.html   # Icon generator tool
-└── README.md            # This file
+├── chrome-based/          # Manifest V3 for Chrome-based browsers
+│   ├── manifest.json      # Manifest V3
+│   ├── background.js      # Service worker
+│   ├── popup.html         # Extension popup
+│   ├── popup.js           # Popup functionality
+│   ├── content.js         # Content script
+│   ├── icons/             # Extension icons
+│   └── bookmark-converter-pro-chrome.zip
+├── firefox/               # Manifest V2 for Firefox
+│   ├── manifest.json      # Manifest V2
+│   ├── background.js      # Background script
+│   ├── popup.html         # Extension popup
+│   ├── popup.js           # Popup functionality
+│   ├── content.js         # Content script
+│   ├── icons/             # Extension icons
+│   └── bookmark-converter-pro-firefox.zip
+└── README.md              # This file
 ```
 
-## Creating Icons
+---
 
-To create the required PNG icons:
+## 🌐 Browser Support
 
-1. Open `generate-icons.html` in your browser
-2. Click "Generate All Icons"
-3. Click "Download All Icons"
-4. Save the downloaded files to the `icons/` folder
+### **Chrome-based Extensions** (Manifest V3)
+**Supported Browsers:**
+- ✅ **Google Chrome** (Manifest V3)
+- ✅ **Microsoft Edge** (Manifest V3)
+- ✅ **Brave Browser** (Manifest V3)
+- ✅ **Opera** (Manifest V3)
+- ✅ **Vivaldi** (Manifest V3)
+- ✅ **Any Chromium-based browser**
 
-Or create your own icons with these specifications:
-- **16x16px** - Toolbar icon
-- **32x32px** - Windows taskbar
-- **48x48px** - Extension management page
-- **128x128px** - Chrome Web Store
+**Download:** [bookmark-converter-pro-chrome.zip](https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-chrome.zip)
 
-## Permissions
+### **Firefox Extension** (Manifest V2)
+**Supported Browsers:**
+- ✅ **Mozilla Firefox** (Manifest V2)
+- ✅ **Firefox Developer Edition**
+- ✅ **Firefox Nightly**
 
-The extension requires these permissions:
-- **bookmarks** - To create and manage bookmarks
-- **storage** - To save user settings
-- **activeTab** - To access current page information
-- **tabs** - To bookmark all open tabs
+**Download:** [bookmark-converter-pro-firefox.zip](https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-firefox.zip)
 
-## Browser Compatibility
+---
 
-- ✅ **Chrome** 88+ (Manifest V3)
-- ✅ **Edge** 88+ (Chromium-based)
-- ✅ **Firefox** 109+ (Manifest V3)
-- ✅ **Safari** 16+ (with modifications)
+## 🚀 Installation Guide
 
-## Development
+### **Chrome-based Browsers (Chrome, Edge, Brave, Opera, Vivaldi)**
 
-### Local Development
-1. Clone the repository
-2. Make your changes
-3. Load the extension in developer mode
-4. Test your changes
-5. Reload the extension to see updates
+1. **Download Extension:**
+   - Download: [bookmark-converter-pro-chrome.zip](https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-chrome.zip)
 
-### Building for Production
-1. Create icons using `generate-icons.html`
-2. Test on all target browsers
-3. Package for Chrome Web Store
-4. Submit for review
+2. **Install Steps:**
+   - Extract the ZIP file
+   - Go to `chrome://extensions/` (or `edge://extensions/` for Edge)
+   - Enable **"Developer mode"** (top-right toggle)
+   - Click **"Load unpacked"**
+   - Select the extracted folder
+   - Pin the extension to toolbar
 
-## Contributing
+### **Firefox**
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+1. **Download Extension:**
+   - Download: [bookmark-converter-pro-firefox.zip](https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-firefox.zip)
 
-## License
+2. **Install Steps:**
+   - Extract the ZIP file
+   - Go to `about:debugging`
+   - Click **"This Firefox"**
+   - Click **"Load Temporary Add-on"**
+   - Select the `manifest.json` file from extracted folder
+   - Pin the extension to toolbar
 
-MIT License - see LICENSE file for details
+---
 
-## Support
+## ✨ Features
 
-- **Issues**: Report bugs on GitHub
-- **Features**: Request features on GitHub
-- **Documentation**: Check this README
-- **Web App**: Use the full web version at [bookmark-converter-pro.onrender.com](https://bookmark-converter-pro.onrender.com)
+### **🎯 Smart URL Processing**
+- Auto-clean messy text and add https://
+- Remove bullets, arrows, and formatting
+- Extract clean URLs from any text format
 
-## Changelog
+### **📁 Smart Folder Management**
+- See all existing folders in your browser
+- Create new folders on the fly
+- Search and filter folders
+- Visual distinction between real folders and suggestions
 
-### v1.0.0
-- Initial release
-- Smart URL processing
-- Direct browser integration
-- Cross-browser support
-- Beautiful UI with glassmorphism design
-- Quick actions and keyboard shortcuts
-- Context menu integration
-- Settings persistence
+### **🔖 Multiple Bookmarking Methods**
+1. **Extension Popup** - Click extension icon
+2. **Floating Button** - Click 🔖 button on any page
+3. **Context Menu** - Right-click → "Bookmark with Converter Pro"
+4. **Keyboard Shortcut** - Press Ctrl+Shift+B
+
+### **⚡ Smart Placement**
+- Bookmarks added at **TOP** of bookmark bar for easy access
+- Folders created at **TOP** for immediate visibility
+- No more hunting for new bookmarks!
+
+---
+
+## 🔧 Technical Details
+
+### **Chrome-based (Manifest V3)**
+- **Manifest Version:** 3
+- **Background Script:** Service Worker
+- **API:** `chrome.*` APIs
+- **Bookmark Bar ID:** `'1'`
+- **Action:** `chrome.action` (not `browser_action`)
+
+### **Firefox (Manifest V2)**
+- **Manifest Version:** 2
+- **Background Script:** Background Script (not service worker)
+- **API:** `browser.*` APIs
+- **Bookmark Bar ID:** `'toolbar_____'`
+- **Action:** `browser.browser_action`
+
+---
+
+## 🛠️ Development
+
+### **Building Extensions**
+
+**Chrome-based:**
+```bash
+cd chrome-based
+# Files are ready to use
+```
+
+**Firefox:**
+```bash
+cd firefox
+# Files are ready to use
+```
+
+### **Testing**
+
+**Chrome-based:**
+1. Load unpacked extension in Chrome/Edge
+2. Test all functionality
+3. Check console for errors
+
+**Firefox:**
+1. Load temporary add-on in Firefox
+2. Test all functionality
+3. Check console for errors
+
+---
+
+## 📦 Packaging
+
+### **Chrome-based Package:**
+- **File:** `bookmark-converter-pro-chrome.zip`
+- **Contents:** All files from `chrome-based/` folder
+- **Manifest:** V3 format
+
+### **Firefox Package:**
+- **File:** `bookmark-converter-pro-firefox.zip`
+- **Contents:** All files from `firefox/` folder
+- **Manifest:** V2 format
+
+---
+
+## 🔄 Updates
+
+To update extensions:
+1. Download the latest package for your browser type
+2. Extract to a new folder
+3. Remove old extension
+4. Install new version
+
+---
+
+## 📞 Support
+
+- **Web App:** [https://bookmark-converter-8okt.onrender.com](https://bookmark-converter-8okt.onrender.com)
+- **GitHub:** [https://github.com/harish-govindasamy/bookmark-converter](https://github.com/harish-govindasamy/bookmark-converter)
+
+---
+
+## 🎉 Success!
+
+Once installed, you'll have:
+- ✅ **Browser-specific optimization**
+- ✅ **Smart URL processing**
+- ✅ **Top-positioned bookmarks**
+- ✅ **Folder management**
+- ✅ **Multiple bookmarking methods**
+- ✅ **No more browser compatibility issues!**
+
+**Happy bookmarking! 🚀**
