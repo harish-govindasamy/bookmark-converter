@@ -67,15 +67,22 @@ function injectBookmarkButton() {
     }, 5000);
 }
 
-// Bookmark current page
+// Bookmark current page with folder selection
 async function bookmarkCurrentPage() {
     try {
+        // Show folder selection dialog
+        const folderName = await showFolderSelectionDialog();
+        if (!folderName) {
+            return; // User cancelled
+        }
+        
         const response = await chrome.runtime.sendMessage({
-            action: 'bookmarkCurrentPage'
+            action: 'bookmarkCurrentPageWithFolder',
+            folderName: folderName
         });
         
         if (response.success) {
-            showNotification('✅ Page bookmarked!', 'success');
+            showNotification(`✅ Page bookmarked in "${folderName}"!`, 'success');
         } else {
             showNotification('❌ ' + response.error, 'error');
         }
@@ -83,6 +90,102 @@ async function bookmarkCurrentPage() {
         console.error('Error bookmarking page:', error);
         showNotification('❌ Error bookmarking page', 'error');
     }
+}
+
+// Show folder selection dialog
+function showFolderSelectionDialog() {
+    return new Promise((resolve) => {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        `;
+        
+        modal.innerHTML = `
+            <h3 style="margin: 0 0 20px 0; color: #333; font-size: 18px;">📁 Choose Bookmark Folder</h3>
+            <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">Where would you like to save this bookmark?</p>
+            <input type="text" id="folderName" placeholder="Enter folder name..." 
+                   style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 20px; box-sizing: border-box;"
+                   value="My Bookmarks">
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="cancelBtn" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel</button>
+                <button id="saveBtn" style="padding: 10px 20px; border: none; background: #4facfe; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">Save Bookmark</button>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        // Focus input
+        const input = modal.querySelector('#folderName');
+        input.focus();
+        input.select();
+        
+        // Handle events
+        const cancelBtn = modal.querySelector('#cancelBtn');
+        const saveBtn = modal.querySelector('#saveBtn');
+        
+        const cleanup = () => {
+            document.body.removeChild(overlay);
+        };
+        
+        cancelBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(null);
+        });
+        
+        saveBtn.addEventListener('click', () => {
+            const folderName = input.value.trim() || 'My Bookmarks';
+            cleanup();
+            resolve(folderName);
+        });
+        
+        // Handle Enter key
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const folderName = input.value.trim() || 'My Bookmarks';
+                cleanup();
+                resolve(folderName);
+            }
+        });
+        
+        // Handle Escape key
+        overlay.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(null);
+            }
+        });
+        
+        // Handle click outside
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                cleanup();
+                resolve(null);
+            }
+        });
+    });
 }
 
 // Show notification

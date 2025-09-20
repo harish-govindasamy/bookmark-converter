@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function openWebAppAction() {
-        chrome.tabs.create({ url: 'https://bookmark-converter-pro.onrender.com' });
+        chrome.tabs.create({ url: 'https://bookmark-converter-8okt.onrender.com' });
         window.close();
     }
     

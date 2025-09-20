@@ -13,7 +13,7 @@ chrome.runtime.onInstalled.addListener((details) => {
         
         // Open welcome page
         chrome.tabs.create({
-            url: 'https://bookmark-converter-pro.onrender.com'
+            url: 'https://bookmark-converter-8okt.onrender.com'
         });
     } else if (details.reason === 'update') {
         console.log('Bookmark Converter Pro updated');
@@ -25,7 +25,7 @@ chrome.commands.onCommand.addListener((command) => {
     if (command === 'open-bookmark-converter') {
         // Open the extension popup or web app
         chrome.tabs.create({
-            url: 'https://bookmark-converter-pro.onrender.com'
+            url: 'https://bookmark-converter-8okt.onrender.com'
         });
     }
 });
@@ -34,6 +34,13 @@ chrome.commands.onCommand.addListener((command) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'bookmarkCurrentPage') {
         bookmarkCurrentPage(sender.tab)
+            .then(result => sendResponse(result))
+            .catch(error => sendResponse({ error: error.message }));
+        return true; // Keep message channel open for async response
+    }
+    
+    if (request.action === 'bookmarkCurrentPageWithFolder') {
+        bookmarkCurrentPageWithFolder(sender.tab, request.folderName)
             .then(result => sendResponse(result))
             .catch(error => sendResponse({ error: error.message }));
         return true; // Keep message channel open for async response
@@ -71,6 +78,43 @@ async function bookmarkCurrentPage(tab) {
         });
         
         return { success: true, bookmark: bookmark };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// Bookmark current page with folder
+async function bookmarkCurrentPageWithFolder(tab, folderName) {
+    try {
+        if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('moz-extension://')) {
+            throw new Error('Cannot bookmark this page');
+        }
+        
+        const title = tab.title || new URL(tab.url).hostname;
+        
+        // Check if folder already exists
+        let folder = null;
+        const bookmarks = await chrome.bookmarks.getChildren('1'); // Get bookmarks bar children
+        folder = bookmarks.find(b => b.title === folderName && !b.url);
+        
+        // Create folder if it doesn't exist
+        if (!folder) {
+            folder = await chrome.bookmarks.create({
+                title: folderName,
+                parentId: '1',
+                index: 0 // Add folder at the beginning (top)
+            });
+        }
+        
+        // Add bookmark to folder
+        const bookmark = await chrome.bookmarks.create({
+            parentId: folder.id,
+            title: title,
+            url: tab.url,
+            index: 0 // Add at the beginning of folder
+        });
+        
+        return { success: true, bookmark: bookmark, folderName: folderName };
     } catch (error) {
         return { success: false, error: error.message };
     }
