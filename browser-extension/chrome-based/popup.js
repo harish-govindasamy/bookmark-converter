@@ -389,7 +389,21 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         debugBtn.addEventListener('click', () => {
             console.log('=== MANUAL DEBUG TRIGGERED ===');
-            loadFolders();
+            
+            // First test: Force show fallback folders to test UI
+            console.log('Testing UI with fallback folders...');
+            folders = [
+                { id: 'test-1', title: 'Test Folder 1', children: [], bookmarkCount: 5, isSuggestion: false },
+                { id: 'test-2', title: 'Test Folder 2', children: [], bookmarkCount: 3, isSuggestion: false },
+                { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true }
+            ];
+            renderFolders();
+            
+            // Then try to load real folders
+            setTimeout(() => {
+                console.log('Now trying to load real folders...');
+                loadFolders();
+            }, 2000);
         });
         
         const folderActions = document.querySelector('.folder-actions');
@@ -495,10 +509,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         function renderFolders() {
-            folderList.innerHTML = '';
-            console.log('Rendering folders:', folders);
+            console.log('=== RENDER FOLDERS START ===');
+            console.log('Folders to render:', folders);
+            
+            // Get the folder list element again to ensure it exists
+            const folderListElement = document.querySelector('.folder-list');
+            console.log('Folder list element found:', !!folderListElement);
+            
+            if (!folderListElement) {
+                console.error('Folder list element not found!');
+                return;
+            }
+            
+            folderListElement.innerHTML = '';
+            console.log('Cleared folder list element');
             
             if (folders.length === 0) {
+                console.log('No folders to render, showing no folders message');
                 // Show message when no folders
                 const noFoldersMsg = document.createElement('div');
                 noFoldersMsg.className = 'no-folders-message';
@@ -510,11 +537,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div style="font-size: 10px; color: #999; margin-top: 10px;">Check browser console for debugging info</div>
                     </div>
                 `;
-                folderList.appendChild(noFoldersMsg);
+                folderListElement.appendChild(noFoldersMsg);
+                console.log('Added no folders message to UI');
                 return;
             }
             
-            folders.forEach(folder => {
+            console.log('Rendering', folders.length, 'folders');
+            
+            folders.forEach((folder, index) => {
+                console.log(`Rendering folder ${index + 1}:`, folder.title);
                 const folderItem = document.createElement('div');
                 folderItem.className = 'folder-item';
                 
@@ -540,8 +571,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     closeDropdown();
                 });
                 
-                folderList.appendChild(folderItem);
+                folderListElement.appendChild(folderItem);
+                console.log(`Added folder item to UI: ${folder.title}`);
             });
+            
+            console.log('=== RENDER FOLDERS END ===');
+            console.log('Total folders rendered:', folders.length);
         }
         
         function filterFolders(searchTerm) {
