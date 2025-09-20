@@ -1,0 +1,44 @@
+{
+  "name": "bookmark-converter-pro-extension",
+  "version": "1.0.0",
+  "description": "A powerful browser extension for converting URLs to organized bookmarks with smart processing and direct browser integration",
+  "main": "background.js",
+  "scripts": {
+    "build": "echo 'Extension is ready to use - no build process needed'",
+    "test": "echo 'Open generate-icons.html in browser to test icon generation'",
+    "package": "zip -r bookmark-converter-pro-extension.zip . -x '*.git*' 'node_modules/*' '*.md' 'package.json'"
+  },
+  "keywords": [
+    "bookmark",
+    "browser-extension",
+    "chrome-extension",
+    "firefox-extension",
+    "edge-extension",
+    "url-converter",
+    "bookmark-manager",
+    "productivity"
+  ],
+  "author": "Bookmark Converter Pro Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/harish-govindasamy/bookmark-converter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/harish-govindasamy/bookmark-converter/issues"
+  },
+  "homepage": "https://bookmark-converter-pro.onrender.com",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "manifest": {
+    "version": 3,
+    "browsers": [
+      "chrome",
+      "firefox",
+      "edge"
+    ]
+  }
+}
