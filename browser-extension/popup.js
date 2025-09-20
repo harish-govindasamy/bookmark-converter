@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const createNewBtn = document.getElementById('createNewFolder');
         
         let folders = [];
-        let isDropdownOpen = false;
+        let isDropdownOpen = true; // Start with dropdown open
         
         // Load folders
         await loadFolders();
@@ -351,12 +351,21 @@ document.addEventListener('DOMContentLoaded', function() {
             filterFolders(searchTerm);
         });
         
+        // Make input editable when clicked
+        folderNameInput.addEventListener('click', () => {
+            folderNameInput.removeAttribute('readonly');
+            folderNameInput.focus();
+        });
+        
         // Create new folder
         createNewBtn.addEventListener('click', () => {
             const newFolderName = folderNameInput.value.trim();
             if (newFolderName) {
                 selectFolder(newFolderName);
                 closeDropdown();
+            } else {
+                folderNameInput.removeAttribute('readonly');
+                folderNameInput.focus();
             }
         });
         
@@ -420,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function selectFolder(folderName) {
             folderNameInput.value = folderName;
+            folderNameInput.setAttribute('readonly', 'readonly');
             
             // Remove previous selection
             document.querySelectorAll('.folder-item').forEach(item => {

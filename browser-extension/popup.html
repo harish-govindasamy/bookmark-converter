@@ -329,12 +329,12 @@
         <div class="content">
             <form id="bookmarkForm">
                 <div class="form-group">
-                    <label for="folderName">📁 Folder Name:</label>
+                    <label for="folderName">📁 Choose Folder:</label>
                     <div class="folder-selector">
-                        <input type="text" id="folderName" value="My Bookmarks" placeholder="Search folders or type new name...">
+                        <input type="text" id="folderName" placeholder="Search folders or type new name..." readonly>
                         <button id="folderDropdownBtn" class="dropdown-btn">▼</button>
                     </div>
-                    <div id="folderDropdown" class="folder-dropdown" style="display: none;">
+                    <div id="folderDropdown" class="folder-dropdown" style="display: block;">
                         <div class="folder-list"></div>
                         <div class="folder-actions">
                             <button id="createNewFolder" class="create-btn">➕ Create New Folder</button>
