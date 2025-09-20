@@ -1594,16 +1594,21 @@ https://www.theverge.com`
                                 ${browser === 'Firefox' ? `
                                 <div style="background: #2a1a1a; border: 1px solid #ff6b6b; border-radius: 6px; padding: 15px; margin-bottom: 20px;">
                                     <h5 style="color: #ff6b6b; margin-bottom: 10px;">🦊 Firefox Special Instructions:</h5>
-                                    <p style="color: #888; margin-bottom: 10px; font-size: 13px;">Firefox supports two installation methods:</p>
+                                    <p style="color: #888; margin-bottom: 10px; font-size: 13px;">Firefox requires signed extensions, but we have easy solutions:</p>
                                     <div style="display: grid; gap: 10px;">
                                         <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 4px; padding: 10px;">
-                                            <strong style="color: #28a745;">Method 1 (Recommended):</strong>
-                                            <p style="color: #888; margin: 5px 0; font-size: 12px;">Download ZIP → Extract → Load Temporary Add-on</p>
+                                            <strong style="color: #28a745;">Method 1 (Recommended - No Signing Required):</strong>
+                                            <p style="color: #888; margin: 5px 0; font-size: 12px;">Download ZIP → Extract → about:debugging → Load Temporary Add-on</p>
+                                            <p style="color: #28a745; margin: 5px 0; font-size: 11px; font-weight: 600;">✅ Bypasses signing requirement completely!</p>
                                         </div>
                                         <div style="background: #1a1a3a; border: 1px solid #4facfe; border-radius: 4px; padding: 10px;">
-                                            <strong style="color: #4facfe;">Method 2 (Alternative):</strong>
-                                            <p style="color: #888; margin: 5px 0; font-size: 12px;">Download XPI → Install Add-on From File</p>
+                                            <strong style="color: #4facfe;">Method 2 (Enable Unsigned Extensions):</strong>
+                                            <p style="color: #888; margin: 5px 0; font-size: 12px;">about:config → xpinstall.signatures.required = false → Install XPI</p>
                                             <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/firefox/bookmark-converter-pro.xpi" target="_blank" style="color: #4facfe; text-decoration: none; font-size: 12px;">📥 Download XPI File</a>
+                                        </div>
+                                        <div style="background: #2a1a2a; border: 1px solid #ff9500; border-radius: 4px; padding: 10px;">
+                                            <strong style="color: #ff9500;">Method 3 (Developer Edition):</strong>
+                                            <p style="color: #888; margin: 5px 0; font-size: 12px;">Use Firefox Developer Edition - allows unsigned extensions by default</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1748,8 +1753,9 @@ https://www.theverge.com`
                                 <h4 style="color: #ff6b6b; margin-bottom: 10px;">💡 Installation Tips:</h4>
                                 <ul style="color: #888; margin: 0; padding-left: 20px; font-size: 13px;">
                                     <li><strong>Chrome-based:</strong> Extract ZIP → Load unpacked → Select folder</li>
-                                    <li><strong>Firefox ZIP:</strong> Extract ZIP → about:debugging → Load Temporary Add-on → Select manifest.json</li>
-                                    <li><strong>Firefox XPI:</strong> about:addons → Install Add-on From File → Select .xpi</li>
+                                    <li><strong>Firefox ZIP (Recommended):</strong> Extract ZIP → about:debugging → Load Temporary Add-on → Select manifest.json</li>
+                                    <li><strong>Firefox XPI:</strong> about:config → xpinstall.signatures.required = false → Install .xpi</li>
+                                    <li><strong>Firefox Developer Edition:</strong> Allows unsigned extensions by default</li>
                                     <li>All extensions add bookmarks at the <strong>TOP</strong> for easy access!</li>
                                 </ul>
                             </div>
