@@ -226,30 +226,40 @@ async function processAndBookmark(data) {
     }
 }
 
-// Get all bookmark folders
+// Get bookmark bar folders (main folders users see)
 async function getBookmarkFolders() {
     try {
         const bookmarkTree = await chrome.bookmarks.getTree();
         const folders = [];
         
-        // Recursively find all folders
-        function findFolders(nodes) {
-            for (const node of nodes) {
+        // Get bookmark bar (id: "1") - this is what users see in their browser
+        const bookmarkBar = bookmarkTree[0]?.children?.find(node => node.id === "1");
+        
+        if (bookmarkBar && bookmarkBar.children) {
+            // Find folders in bookmark bar
+            for (const node of bookmarkBar.children) {
                 if (node.children && !node.url) {
-                    // This is a folder
+                    // This is a folder in bookmark bar
+                    const bookmarkCount = node.children.filter(child => child.url).length;
                     folders.push({
                         id: node.id,
                         title: node.title,
-                        children: node.children.filter(child => child.url) // Only count actual bookmarks
+                        children: node.children.filter(child => child.url),
+                        bookmarkCount: bookmarkCount
                     });
-                    
-                    // Recursively find subfolders
-                    findFolders(node.children);
                 }
             }
         }
         
-        findFolders(bookmarkTree);
+        // If no folders found, add some default suggestions
+        if (folders.length === 0) {
+            folders.push(
+                { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+            );
+        }
         
         // Sort folders by name
         folders.sort((a, b) => a.title.localeCompare(b.title));

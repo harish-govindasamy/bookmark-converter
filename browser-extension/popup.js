@@ -390,14 +390,42 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function renderFolders() {
             folderList.innerHTML = '';
+            
+            if (folders.length === 0) {
+                // Show message when no folders
+                const noFoldersMsg = document.createElement('div');
+                noFoldersMsg.className = 'no-folders-message';
+                noFoldersMsg.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
+                        <div style="font-weight: 600; margin-bottom: 5px;">No folders found</div>
+                        <div style="font-size: 12px;">Type a name above to create your first folder!</div>
+                    </div>
+                `;
+                folderList.appendChild(noFoldersMsg);
+                return;
+            }
+            
             folders.forEach(folder => {
                 const folderItem = document.createElement('div');
                 folderItem.className = 'folder-item';
+                
+                // Different styling for suggestions vs real folders
+                const isSuggestion = folder.isSuggestion;
+                const icon = isSuggestion ? '💡' : '📁';
+                const count = folder.bookmarkCount || (folder.children ? folder.children.length : 0);
+                
                 folderItem.innerHTML = `
-                    <span class="folder-icon">📁</span>
+                    <span class="folder-icon">${icon}</span>
                     <span class="folder-name">${folder.title}</span>
-                    <span class="folder-count">${folder.children ? folder.children.length : 0}</span>
+                    <span class="folder-count">${count}</span>
                 `;
+                
+                // Different styling for suggestions
+                if (isSuggestion) {
+                    folderItem.style.opacity = '0.7';
+                    folderItem.style.fontStyle = 'italic';
+                }
                 
                 folderItem.addEventListener('click', () => {
                     selectFolder(folder.title);

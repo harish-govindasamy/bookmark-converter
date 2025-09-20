@@ -156,13 +156,19 @@ function showFolderSelectionDialog() {
             `;
             
             // Generate folder options HTML
-            const folderOptionsHTML = response.folders.map(folder => 
-                `<div class="folder-option" data-folder="${folder.title}" style="padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 16px;">📁</span>
+            const folderOptionsHTML = response.folders.map(folder => {
+                const isSuggestion = folder.isSuggestion;
+                const icon = isSuggestion ? '💡' : '📁';
+                const count = folder.bookmarkCount || (folder.children ? folder.children.length : 0);
+                const opacity = isSuggestion ? '0.7' : '1';
+                const fontStyle = isSuggestion ? 'italic' : 'normal';
+                
+                return `<div class="folder-option" data-folder="${folder.title}" style="padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px; opacity: ${opacity}; font-style: ${fontStyle};">
+                    <span style="font-size: 16px;">${icon}</span>
                     <span style="flex: 1; font-size: 14px; color: #333;">${folder.title}</span>
-                    <span style="font-size: 12px; color: #666; background: #f0f0f0; padding: 2px 8px; border-radius: 12px;">${folder.children ? folder.children.length : 0} bookmarks</span>
-                </div>`
-            ).join('');
+                    <span style="font-size: 12px; color: #666; background: #f0f0f0; padding: 2px 8px; border-radius: 12px;">${count} bookmarks</span>
+                </div>`;
+            }).join('');
             
             modal.innerHTML = `
                 <h3 style="margin: 0 0 20px 0; color: #333; font-size: 18px;">📁 Choose Bookmark Folder</h3>
