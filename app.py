@@ -138,6 +138,49 @@ def download_file(filename):
     except Exception as e:
         return jsonify({'error': 'File not found'}), 404
 
+@app.route('/add-to-browser', methods=['POST'])
+def add_to_browser():
+    """Add bookmarks directly to browser using JavaScript"""
+    try:
+        data = request.get_json()
+        urls_text = data.get('urls', '')
+        folder_name = data.get('folder_name', 'Imported Bookmarks')
+        
+        if not urls_text.strip():
+            return jsonify({'error': 'Please provide some URLs'}), 400
+        
+        # Process URLs
+        processed_urls = clean_and_process_urls(urls_text)
+        
+        # Create bookmark data for JavaScript
+        bookmarks_data = []
+        for url in processed_urls:
+            if url and (url.startswith('http://') or url.startswith('https://')):
+                try:
+                    from urllib.parse import urlparse
+                    parsed = urlparse(url)
+                    title = parsed.netloc.replace('www.', '') or url
+                except:
+                    title = url
+                
+                bookmarks_data.append({
+                    'title': title,
+                    'url': url
+                })
+        
+        # Log usage for analytics
+        log_usage(len(bookmarks_data), folder_name)
+        
+        return jsonify({
+            'success': True,
+            'bookmarks': bookmarks_data,
+            'folder_name': folder_name,
+            'count': len(bookmarks_data)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/analytics')
 def analytics():
     """Simple analytics endpoint"""

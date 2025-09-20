@@ -99,21 +99,40 @@
             font-family: 'Courier New', monospace;
         }
         
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
         .btn {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 15px 20px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
-            width: 100%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
         }
         
         .btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
         .btn:disabled {
@@ -394,6 +413,10 @@
         
         /* Responsive Design */
         @media (max-width: 768px) {
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
             .browser-tabs {
                 flex-direction: column;
                 align-items: center;
@@ -444,7 +467,10 @@
                     <textarea id="urls" name="urls" placeholder="Paste your URLs here, one per line...&#10;&#10;✨ SMART PROCESSING: We automatically clean up messy text!&#10;&#10;Examples:&#10;https://www.google.com&#10;→ Toptal (toptal.com)&#10;github.com&#10;Remote OK (remoteok.com)"></textarea>
                 </div>
                 
-                <button type="submit" class="btn" id="convertBtn">Convert to Bookmarks</button>
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" id="convertBtn">📥 Download HTML File</button>
+                    <button type="button" class="btn btn-secondary" id="addToBrowserBtn">🚀 Add to Browser Directly</button>
+                </div>
             </form>
             
             <div class="loading" id="loading">
@@ -826,9 +852,19 @@ https://www.theverge.com`
             document.getElementById('folderName').value = type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
         }
 
+        // Download HTML file functionality
         document.getElementById('converterForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+            await processUrls('download');
+        });
+        
+        // Add to browser directly functionality
+        document.getElementById('addToBrowserBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await processUrls('browser');
+        });
+        
+        async function processUrls(mode) {
             const urls = document.getElementById('urls').value;
             const folderName = document.getElementById('folderName').value;
             
@@ -841,9 +877,11 @@ https://www.theverge.com`
             document.getElementById('loading').style.display = 'block';
             document.getElementById('result').style.display = 'none';
             document.getElementById('convertBtn').disabled = true;
+            document.getElementById('addToBrowserBtn').disabled = true;
             
             try {
-                const response = await fetch('/convert', {
+                const endpoint = mode === 'download' ? '/convert' : '/add-to-browser';
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -857,14 +895,26 @@ https://www.theverge.com`
                 const data = await response.json();
                 
                 if (data.success) {
-                    showResult(`
-                        <h3>✅ Success!</h3>
-                        <p>Converted <strong>${data.url_count}</strong> URLs to bookmarks</p>
-                        <a href="${data.download_url}" class="btn download-btn" download>📥 Download Bookmarks.html</a>
-                        <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                            Import this file into your browser: Chrome → Bookmarks → Import bookmarks and settings
-                        </p>
-                    `, 'success');
+                    if (mode === 'download') {
+                        showResult(`
+                            <h3>✅ Success!</h3>
+                            <p>Converted <strong>${data.url_count}</strong> URLs to bookmarks</p>
+                            <a href="${data.download_url}" class="btn download-btn" download>📥 Download Bookmarks.html</a>
+                            <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                                Import this file into your browser using the tutorial below
+                            </p>
+                        `, 'success');
+                    } else {
+                        // Direct browser integration
+                        await addBookmarksToBrowser(data.bookmarks, data.folder_name);
+                        showResult(`
+                            <h3>✅ Success!</h3>
+                            <p>Added <strong>${data.count}</strong> bookmarks directly to your browser!</p>
+                            <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                                Check your bookmarks bar - they should appear there now!
+                            </p>
+                        `, 'success');
+                    }
                     
                     // Update stats
                     loadStats();
@@ -876,8 +926,41 @@ https://www.theverge.com`
             } finally {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('convertBtn').disabled = false;
+                document.getElementById('addToBrowserBtn').disabled = false;
             }
-        });
+        }
+        
+        async function addBookmarksToBrowser(bookmarks, folderName) {
+            // Create a folder first
+            try {
+                const folder = await chrome.bookmarks.create({
+                    title: folderName,
+                    parentId: '1' // Bookmarks bar
+                });
+                
+                // Add each bookmark to the folder
+                for (const bookmark of bookmarks) {
+                    await chrome.bookmarks.create({
+                        parentId: folder.id,
+                        title: bookmark.title,
+                        url: bookmark.url
+                    });
+                }
+            } catch (error) {
+                // Fallback: try to add to bookmarks bar directly
+                try {
+                    for (const bookmark of bookmarks) {
+                        await chrome.bookmarks.create({
+                            parentId: '1', // Bookmarks bar
+                            title: bookmark.title,
+                            url: bookmark.url
+                        });
+                    }
+                } catch (fallbackError) {
+                    throw new Error('Unable to add bookmarks directly. Please use the download option instead.');
+                }
+            }
+        }
 
         function showResult(content, type) {
             const resultDiv = document.getElementById('result');
