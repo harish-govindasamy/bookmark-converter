@@ -4,6 +4,12 @@
   "version": "1.0.0",
   "description": "Convert URLs to organized bookmarks with smart processing and direct browser integration - Firefox",
   
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "bookmark-converter-pro@harish-govindasamy.github.io"
+    }
+  },
+  
   "permissions": [
     "bookmarks",
     "storage",

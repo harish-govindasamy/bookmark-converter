@@ -82,8 +82,15 @@ async function bookmarkCurrentPage(tab) {
         
         const title = tab.title || new URL(tab.url).hostname;
         
+        // Get the correct bookmark bar ID
+        const bookmarkTree = await browser.bookmarks.getTree();
+        const bookmarkBar = bookmarkTree[0]?.children?.find(node => 
+            node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+        );
+        const parentId = bookmarkBar ? bookmarkBar.id : 'toolbar_____';
+        
         const bookmark = await browser.bookmarks.create({
-            parentId: 'toolbar_____', // Firefox bookmarks toolbar
+            parentId: parentId, // Firefox bookmarks toolbar
             title: title,
             url: tab.url,
             index: 0 // Add at the beginning (top) instead of end
@@ -104,16 +111,23 @@ async function bookmarkCurrentPageWithFolder(tab, folderName) {
         
         const title = tab.title || new URL(tab.url).hostname;
         
+        // Get the correct bookmark bar ID
+        const bookmarkTree = await browser.bookmarks.getTree();
+        const bookmarkBar = bookmarkTree[0]?.children?.find(node => 
+            node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+        );
+        const toolbarId = bookmarkBar ? bookmarkBar.id : 'toolbar_____';
+        
         // Check if folder already exists
         let folder = null;
-        const bookmarks = await browser.bookmarks.getChildren('toolbar_____'); // Get bookmarks toolbar children
+        const bookmarks = await browser.bookmarks.getChildren(toolbarId); // Get bookmarks toolbar children
         folder = bookmarks.find(b => b.title === folderName && !b.url);
         
         // Create folder if it doesn't exist
         if (!folder) {
             folder = await browser.bookmarks.create({
                 title: folderName,
-                parentId: 'toolbar_____',
+                parentId: toolbarId,
                 index: 0 // Add folder at the beginning (top)
             });
         }
@@ -146,10 +160,17 @@ async function bookmarkAllTabs() {
             throw new Error('No valid tabs to bookmark');
         }
         
+        // Get the correct bookmark bar ID
+        const bookmarkTree = await browser.bookmarks.getTree();
+        const bookmarkBar = bookmarkTree[0]?.children?.find(node => 
+            node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+        );
+        const toolbarId = bookmarkBar ? bookmarkBar.id : 'toolbar_____';
+        
         const folderName = `All Tabs - ${new Date().toLocaleDateString()}`;
         const folder = await browser.bookmarks.create({
             title: folderName,
-            parentId: 'toolbar_____',
+            parentId: toolbarId,
             index: 0 // Add folder at the beginning (top) instead of end
         });
         
@@ -192,10 +213,17 @@ async function processAndBookmark(data) {
             throw new Error('No valid URLs found');
         }
         
+        // Get the correct bookmark bar ID
+        const bookmarkTree = await browser.bookmarks.getTree();
+        const bookmarkBar = bookmarkTree[0]?.children?.find(node => 
+            node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+        );
+        const toolbarId = bookmarkBar ? bookmarkBar.id : 'toolbar_____';
+        
         // Create folder
         const folder = await browser.bookmarks.create({
             title: folderName || 'My Bookmarks',
-            parentId: 'toolbar_____',
+            parentId: toolbarId,
             index: 0 // Add folder at the beginning (top) instead of end
         });
         
@@ -234,8 +262,10 @@ async function getBookmarkFolders() {
         const bookmarkTree = await browser.bookmarks.getTree();
         const folders = [];
         
-        // Get bookmark toolbar (id: "toolbar_____") - this is what users see in their browser
-        const bookmarkToolbar = bookmarkTree[0]?.children?.find(node => node.id === "toolbar_____");
+        // Get bookmark toolbar - this is what users see in their browser
+        const bookmarkToolbar = bookmarkTree[0]?.children?.find(node => 
+            node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+        );
         
         if (bookmarkToolbar && bookmarkToolbar.children) {
             // Find folders in bookmark toolbar
@@ -348,9 +378,16 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
     try {
         if (info.menuItemId === 'bookmarkWithConverter') {
             if (info.linkUrl) {
+                // Get the correct bookmark bar ID
+                const bookmarkTree = await browser.bookmarks.getTree();
+                const bookmarkBar = bookmarkTree[0]?.children?.find(node => 
+                    node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+                );
+                const toolbarId = bookmarkBar ? bookmarkBar.id : 'toolbar_____';
+                
                 // Bookmark the link
                 await browser.bookmarks.create({
-                    parentId: 'toolbar_____',
+                    parentId: toolbarId,
                     title: info.linkText || new URL(info.linkUrl).hostname,
                     url: info.linkUrl,
                     index: 0 // Add at the beginning (top) instead of end
