@@ -74,6 +74,11 @@ class BookmarkConverterPro {
             console.error('Error initializing folder selector:', error);
             this.showError('Failed to load folders. Using default options.');
             this.loadDefaultFolders();
+        } finally {
+            // Always ensure we have some folders to show
+            if (this.folders.length === 0) {
+                this.loadDefaultFolders();
+            }
         }
     }
 
@@ -130,8 +135,12 @@ class BookmarkConverterPro {
                 return;
             }
 
-            // Fallback to background script
-            const response = await chrome.runtime.sendMessage({ action: 'getBookmarkFolders' });
+            // Fallback to background script with timeout
+            const response = await Promise.race([
+                chrome.runtime.sendMessage({ action: 'getBookmarkFolders' }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+            ]);
+            
             if (response && response.success && response.folders) {
                 this.folders = response.folders;
                 this.renderFolders();
@@ -177,6 +186,21 @@ class BookmarkConverterPro {
                         }
                     }
                 }
+            }
+            
+            // Always add default suggestions for better UX
+            const defaultSuggestions = [
+                { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+            ];
+            
+            // Add suggestions if no folders found, or append them for better UX
+            if (folders.length === 0) {
+                folders.push(...defaultSuggestions);
+            } else {
+                folders.push(...defaultSuggestions);
             }
             
             return folders;

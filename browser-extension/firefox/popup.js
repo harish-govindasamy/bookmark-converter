@@ -104,6 +104,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load folders
         await loadFolders();
         
+        // Always ensure we have some folders to show
+        if (folders.length === 0) {
+            folders = [
+                { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+            ];
+            renderFolders();
+        }
+        
         // Toggle dropdown
         dropdownBtn.addEventListener('click', () => {
             isDropdownOpen = !isDropdownOpen;
@@ -149,7 +160,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error('Extension context invalidated');
                 }
                 
-                const response = await browser.runtime.sendMessage({ action: 'getBookmarkFolders' });
+                // Add timeout to prevent infinite loading
+                const response = await Promise.race([
+                    browser.runtime.sendMessage({ action: 'getBookmarkFolders' }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                ]);
+                
                 console.log('Folder response:', response);
                 
                 if (response && response.success && response.folders) {

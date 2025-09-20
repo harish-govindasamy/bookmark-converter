@@ -301,15 +301,21 @@ async function getBookmarkFolders() {
             console.log('No bookmark bar or children found');
         }
         
-        // If no folders found, add some default suggestions
+        // Always add some default suggestions for better UX
+        const defaultSuggestions = [
+            { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+        ];
+        
+        // Add default suggestions if no folders found, or append them for better UX
         if (folders.length === 0) {
             console.log('No folders found, adding default suggestions');
-            folders.push(
-                { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
-                { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
-                { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
-                { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
-            );
+            folders.push(...defaultSuggestions);
+        } else {
+            // Add suggestions at the end for better UX
+            folders.push(...defaultSuggestions);
         }
         
         // Sort folders by name
@@ -319,7 +325,14 @@ async function getBookmarkFolders() {
         return { success: true, folders: folders, browser: 'Chrome-based' };
     } catch (error) {
         console.error('Error getting bookmark folders:', error);
-        return { success: false, error: error.message, browser: 'Chrome-based' };
+        // Return default suggestions even on error
+        const defaultSuggestions = [
+            { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+        ];
+        return { success: true, folders: defaultSuggestions, browser: 'Chrome-based' };
     }
 }
 

@@ -259,7 +259,10 @@ async function processAndBookmark(data) {
 // Get bookmark toolbar folders (main folders users see)
 async function getBookmarkFolders() {
     try {
+        console.log('Getting bookmark folders...');
         const bookmarkTree = await browser.bookmarks.getTree();
+        console.log('Bookmark tree:', bookmarkTree);
+        
         const folders = [];
         
         // Get bookmark toolbar - this is what users see in their browser
@@ -267,7 +270,10 @@ async function getBookmarkFolders() {
             node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
         );
         
+        console.log('Bookmark toolbar:', bookmarkToolbar);
+        
         if (bookmarkToolbar && bookmarkToolbar.children) {
+            console.log('Bookmark toolbar children:', bookmarkToolbar.children);
             // Find folders in bookmark toolbar
             for (const node of bookmarkToolbar.children) {
                 if (node.children && !node.url) {
@@ -279,26 +285,45 @@ async function getBookmarkFolders() {
                         children: node.children.filter(child => child.url),
                         bookmarkCount: bookmarkCount
                     });
+                    console.log('Found folder:', node.title, 'with', bookmarkCount, 'bookmarks');
                 }
             }
+        } else {
+            console.log('No bookmark toolbar or children found');
         }
         
-        // If no folders found, add some default suggestions
+        // Always add some default suggestions for better UX
+        const defaultSuggestions = [
+            { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+        ];
+        
+        // Add default suggestions if no folders found, or append them for better UX
         if (folders.length === 0) {
-            folders.push(
-                { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
-                { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
-                { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
-                { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
-            );
+            console.log('No folders found, adding default suggestions');
+            folders.push(...defaultSuggestions);
+        } else {
+            // Add suggestions at the end for better UX
+            folders.push(...defaultSuggestions);
         }
         
         // Sort folders by name
         folders.sort((a, b) => a.title.localeCompare(b.title));
         
+        console.log('Returning folders:', folders);
         return { success: true, folders: folders, browser: 'Firefox' };
     } catch (error) {
-        return { success: false, error: error.message, browser: 'Firefox' };
+        console.error('Error getting bookmark folders:', error);
+        // Return default suggestions even on error
+        const defaultSuggestions = [
+            { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+            { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+        ];
+        return { success: true, folders: defaultSuggestions, browser: 'Firefox' };
     }
 }
 
