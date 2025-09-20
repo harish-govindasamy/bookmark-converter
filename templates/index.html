@@ -193,6 +193,152 @@
             background: #5a6268;
         }
         
+        /* Help Button Styles */
+        .help-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .help-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .help-icon {
+            font-size: 16px;
+        }
+        
+        .help-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            margin-bottom: 5px;
+        }
+        
+        .help-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #333;
+        }
+        
+        .help-btn:hover .help-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 900px;
+            max-height: 90vh;
+            width: 90%;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
         .stats {
             margin-top: 30px;
             padding: 20px;
@@ -417,6 +563,25 @@
                 grid-template-columns: 1fr;
             }
             
+            .help-btn {
+                width: 100%;
+                justify-content: center;
+                margin: 10px 0;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-height: 95vh;
+            }
+            
+            .modal-header {
+                padding: 15px 20px;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
             .browser-tabs {
                 flex-direction: column;
                 align-items: center;
@@ -486,11 +651,22 @@
                 <button class="example-btn" onclick="loadExample('messy-text')">✨ Messy Text (Auto-Clean)</button>
                 <button class="example-btn" onclick="loadExample('tech-sites')">Tech Resources</button>
                 <button class="example-btn" onclick="loadExample('news-sites')">News Sites</button>
+                <button class="help-btn" onclick="openTutorial()" onmouseover="showHelpTooltip()" onmouseout="hideHelpTooltip()">
+                    <span class="help-icon">❓</span>
+                    <span class="help-text">How to Import Bookmarks</span>
+                    <div class="help-tooltip" id="helpTooltip">Click to see browser import guides</div>
+                </button>
             </div>
             
-            <div class="tutorial-section">
-                <h3>📚 How to Import Bookmarks</h3>
-                <p>Follow these step-by-step guides to import your bookmarks into your browser:</p>
+            <!-- Tutorial Modal -->
+            <div class="modal-overlay" id="tutorialModal" onclick="closeTutorial()">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <h3>📚 How to Import Bookmarks</h3>
+                        <button class="close-btn" onclick="closeTutorial()">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Follow these step-by-step guides to import your bookmarks into your browser:</p>
                 
                 <div class="browser-tabs">
                     <button class="browser-tab active" onclick="showBrowser('chrome')">
@@ -769,6 +945,8 @@
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
             
             <div class="stats" id="stats">
@@ -985,6 +1163,39 @@ https://www.theverge.com`
 
         // Load stats on page load
         loadStats();
+        
+        // Modal tutorial functions
+        function openTutorial() {
+            document.getElementById('tutorialModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        
+        function closeTutorial() {
+            document.getElementById('tutorialModal').classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+        
+        function showHelpTooltip() {
+            // Tooltip is handled by CSS hover
+        }
+        
+        function hideHelpTooltip() {
+            // Tooltip is handled by CSS hover
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeTutorial();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeTutorial();
+            }
+        });
         
         // Browser tutorial functions
         function showBrowser(browser) {
