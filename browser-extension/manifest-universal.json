@@ -1,0 +1,59 @@
+{
+  "manifest_version": 2,
+  "name": "Bookmark Converter Pro",
+  "version": "1.0.0",
+  "description": "Convert URLs to organized bookmarks with smart processing and direct browser integration - Universal Browser Support",
+  
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "activeTab",
+    "tabs",
+    "contextMenus"
+  ],
+  
+  "background": {
+    "scripts": ["background-universal.js"],
+    "persistent": false
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-universal.js"],
+      "run_at": "document_end"
+    }
+  ],
+  
+  "browser_action": {
+    "default_popup": "popup-universal.html",
+    "default_title": "Bookmark Converter Pro",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "web_accessible_resources": [
+    "popup-universal.html",
+    "icons/*"
+  ],
+  
+  "commands": {
+    "open-bookmark-converter": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+B"
+      },
+      "description": "Open Bookmark Converter"
+    }
+  }
+}
