@@ -37,5 +37,6 @@ Thumbs.db
 
 # App specific
 usage_log.json
-*.html
+# Don't ignore template HTML files
+# *.html
 temp_*

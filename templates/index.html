@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmark Converter - Organize Your URLs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .download-btn {
+            background: #28a745;
+            margin-top: 15px;
+        }
+        
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .examples h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .example-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .example-btn:hover {
+            background: #5a6268;
+        }
+        
+        .stats {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔖 Bookmark Converter</h1>
+            <p>Transform your URLs into organized browser bookmarks</p>
+        </div>
+        
+        <div class="content">
+            <form id="converterForm">
+                <div class="form-group">
+                    <label for="folderName">Folder Name:</label>
+                    <input type="text" id="folderName" name="folderName" value="My Bookmarks" placeholder="Enter folder name for your bookmarks">
+                </div>
+                
+                <div class="form-group">
+                    <label for="urls">URLs (one per line):</label>
+                    <textarea id="urls" name="urls" placeholder="Paste your URLs here, one per line...&#10;&#10;Example:&#10;https://www.google.com&#10;https://github.com&#10;https://stackoverflow.com"></textarea>
+                </div>
+                
+                <button type="submit" class="btn" id="convertBtn">Convert to Bookmarks</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Converting your URLs...</p>
+            </div>
+            
+            <div class="result" id="result"></div>
+            
+            <div class="examples">
+                <h3>Quick Examples:</h3>
+                <button class="example-btn" onclick="loadExample('job-sites')">Job Search Sites</button>
+                <button class="example-btn" onclick="loadExample('tech-sites')">Tech Resources</button>
+                <button class="example-btn" onclick="loadExample('news-sites')">News Sites</button>
+            </div>
+            
+            <div class="stats" id="stats">
+                <h3>📊 Usage Statistics</h3>
+                <p id="statsContent">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const examples = {
+            'job-sites': `https://toptal.com
+https://skipthedrive.com
+https://nodesk.co
+https://remotehabits.com
+https://remotive.com
+https://remote4me.com
+https://pangian.com
+https://remotees.com
+https://justremote.co
+https://remotecrew.io
+https://europeremotely.com
+https://remoteok.io/europe
+https://remoteok.io/asia
+https://flexjobs.com
+https://remote.co
+https://weworkremotely.com
+https://remoteok.com
+https://angel.co
+https://linkedin.com
+https://upwork.com`,
+            'tech-sites': `https://github.com
+https://stackoverflow.com
+https://developer.mozilla.org
+https://www.python.org
+https://nodejs.org
+https://reactjs.org
+https://vuejs.org
+https://angular.io
+https://www.docker.com
+https://kubernetes.io
+https://aws.amazon.com
+https://cloud.google.com
+https://azure.microsoft.com`,
+            'news-sites': `https://www.bbc.com
+https://www.cnn.com
+https://www.reuters.com
+https://www.theguardian.com
+https://www.nytimes.com
+https://www.washingtonpost.com
+https://techcrunch.com
+https://www.wired.com
+https://arstechnica.com
+https://www.theverge.com`
+        };
+
+        function loadExample(type) {
+            document.getElementById('urls').value = examples[type];
+            document.getElementById('folderName').value = type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        document.getElementById('converterForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const urls = document.getElementById('urls').value;
+            const folderName = document.getElementById('folderName').value;
+            
+            if (!urls.trim()) {
+                showResult('Please enter some URLs', 'error');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('convertBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        urls: urls,
+                        folder_name: folderName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`
+                        <h3>✅ Success!</h3>
+                        <p>Converted <strong>${data.url_count}</strong> URLs to bookmarks</p>
+                        <a href="${data.download_url}" class="btn download-btn" download>📥 Download Bookmarks.html</a>
+                        <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                            Import this file into your browser: Chrome → Bookmarks → Import bookmarks and settings
+                        </p>
+                    `, 'success');
+                    
+                    // Update stats
+                    loadStats();
+                } else {
+                    showResult(`<h3>❌ Error</h3><p>${data.error}</p>`, 'error');
+                }
+            } catch (error) {
+                showResult(`<h3>❌ Error</h3><p>Something went wrong: ${error.message}</p>`, 'error');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('convertBtn').disabled = false;
+            }
+        });
+
+        function showResult(content, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = content;
+            resultDiv.className = `result ${type}`;
+            resultDiv.style.display = 'block';
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/analytics');
+                const data = await response.json();
+                
+                document.getElementById('statsContent').innerHTML = `
+                    <strong>${data.total_conversions}</strong> conversions | 
+                    <strong>${data.total_urls}</strong> URLs processed
+                `;
+            } catch (error) {
+                document.getElementById('statsContent').innerHTML = 'Stats unavailable';
+            }
+        }
+
+        // Load stats on page load
+        loadStats();
+    </script>
+</body>
+</html>
+
