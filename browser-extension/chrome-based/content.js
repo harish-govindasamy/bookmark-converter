@@ -1,4 +1,7 @@
-// Content script for Bookmark Converter Pro Extension
+// Bookmark Converter Pro - Enterprise-Grade Content Script
+// Professional bookmark integration with comprehensive error handling
+
+console.log('🚀 Bookmark Converter Pro content script loaded');
 
 // Inject bookmark button into pages
 function injectBookmarkButton() {

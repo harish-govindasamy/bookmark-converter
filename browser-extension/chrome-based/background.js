@@ -1,7 +1,7 @@
 // Background script for Bookmark Converter Pro Extension (Chrome-based browsers)
 // Supports Chrome, Edge, Brave, Opera, Vivaldi with Manifest V3
 
-console.log('Bookmark Converter Pro Chrome-based background script starting...');
+console.log('🚀 Bookmark Converter Pro - Enterprise-Grade Background Service Worker Starting...');
 
 // Handle extension installation
 chrome.runtime.onInstalled.addListener((details) => {
@@ -34,43 +34,81 @@ chrome.commands.onCommand.addListener((command) => {
     }
 });
 
-// Handle messages from content scripts and popup
+// Handle messages from content scripts and popup with comprehensive error handling
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Message received:', request.action);
+    console.log('📨 Message received:', request.action, 'from:', sender.tab?.url || 'popup');
     
-    if (request.action === 'bookmarkCurrentPage') {
-        bookmarkCurrentPage(sender.tab)
-            .then(result => sendResponse(result))
-            .catch(error => sendResponse({ error: error.message }));
-        return true; // Keep message channel open for async response
-    }
-    
-    if (request.action === 'bookmarkCurrentPageWithFolder') {
-        bookmarkCurrentPageWithFolder(sender.tab, request.folderName)
-            .then(result => sendResponse(result))
-            .catch(error => sendResponse({ error: error.message }));
-        return true; // Keep message channel open for async response
-    }
-    
-    if (request.action === 'bookmarkAllTabs') {
-        bookmarkAllTabs()
-            .then(result => sendResponse(result))
-            .catch(error => sendResponse({ error: error.message }));
-        return true;
-    }
-    
-    if (request.action === 'processAndBookmark') {
-        processAndBookmark(request.data)
-            .then(result => sendResponse(result))
-            .catch(error => sendResponse({ error: error.message }));
-        return true;
-    }
-    
-    if (request.action === 'getBookmarkFolders') {
-        getBookmarkFolders()
-            .then(result => sendResponse(result))
-            .catch(error => sendResponse({ error: error.message }));
-        return true;
+    try {
+        switch (request.action) {
+            case 'bookmarkCurrentPage':
+                bookmarkCurrentPage(sender.tab)
+                    .then(result => {
+                        console.log('✅ Bookmark current page result:', result);
+                        sendResponse(result);
+                    })
+                    .catch(error => {
+                        console.error('❌ Bookmark current page error:', error);
+                        sendResponse({ success: false, error: error.message });
+                    });
+                return true; // Keep message channel open for async response
+                
+            case 'bookmarkCurrentPageWithFolder':
+                bookmarkCurrentPageWithFolder(sender.tab, request.folderName)
+                    .then(result => {
+                        console.log('✅ Bookmark with folder result:', result);
+                        sendResponse(result);
+                    })
+                    .catch(error => {
+                        console.error('❌ Bookmark with folder error:', error);
+                        sendResponse({ success: false, error: error.message });
+                    });
+                return true;
+                
+            case 'bookmarkAllTabs':
+                bookmarkAllTabs()
+                    .then(result => {
+                        console.log('✅ Bookmark all tabs result:', result);
+                        sendResponse(result);
+                    })
+                    .catch(error => {
+                        console.error('❌ Bookmark all tabs error:', error);
+                        sendResponse({ success: false, error: error.message });
+                    });
+                return true;
+                
+            case 'processAndBookmark':
+                processAndBookmark(request.data)
+                    .then(result => {
+                        console.log('✅ Process and bookmark result:', result);
+                        sendResponse(result);
+                    })
+                    .catch(error => {
+                        console.error('❌ Process and bookmark error:', error);
+                        sendResponse({ success: false, error: error.message });
+                    });
+                return true;
+                
+            case 'getBookmarkFolders':
+                getBookmarkFolders()
+                    .then(result => {
+                        console.log('✅ Get bookmark folders result:', result);
+                        sendResponse(result);
+                    })
+                    .catch(error => {
+                        console.error('❌ Get bookmark folders error:', error);
+                        sendResponse({ success: false, error: error.message });
+                    });
+                return true;
+                
+            default:
+                console.warn('⚠️ Unknown action:', request.action);
+                sendResponse({ success: false, error: 'Unknown action' });
+                return false;
+        }
+    } catch (error) {
+        console.error('💥 Critical error in message handler:', error);
+        sendResponse({ success: false, error: 'Critical error: ' + error.message });
+        return false;
     }
 });
 
