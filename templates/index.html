@@ -321,6 +321,57 @@
             line-height: 1.5;
         }
         
+        /* Troubleshooting Styles */
+        .troubleshooting {
+            margin-top: 30px;
+            padding: 25px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+        }
+        
+        .troubleshooting h4 {
+            color: #856404;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        
+        .troubleshooting-tips {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .tip {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .tip strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .tip ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .tip li {
+            color: #6c757d;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .tip p {
+            color: #6c757d;
+            margin: 10px 0 0 0;
+            line-height: 1.5;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .browser-tabs {
@@ -342,6 +393,10 @@
             
             .step-number {
                 align-self: center;
+            }
+            
+            .troubleshooting-tips {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -416,29 +471,36 @@
                             <div class="step">
                                 <div class="step-number">1</div>
                                 <div class="step-content">
-                                    <strong>Open Chrome Menu</strong>
-                                    <p>Click the three dots (⋮) in the top-right corner of Chrome</p>
+                                    <strong>Open Bookmark Manager</strong>
+                                    <p>Click the three dots (⋮) → Bookmarks → Bookmark manager (or press Ctrl+Shift+O)</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">2</div>
                                 <div class="step-content">
-                                    <strong>Go to Bookmarks</strong>
-                                    <p>Hover over "Bookmarks" and select "Import bookmarks and settings"</p>
+                                    <strong>Access Import Menu</strong>
+                                    <p>In Bookmark Manager, click the three dots (⋮) in the top-right corner</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">3</div>
                                 <div class="step-content">
-                                    <strong>Select File</strong>
-                                    <p>Choose "Bookmarks HTML file" and click "Choose File"</p>
+                                    <strong>Select Import Bookmarks</strong>
+                                    <p>Choose "Import Bookmarks" from the dropdown menu</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">4</div>
                                 <div class="step-content">
-                                    <strong>Import</strong>
-                                    <p>Select your downloaded bookmarks.html file and click "Import"</p>
+                                    <strong>Choose File</strong>
+                                    <p>Select your downloaded bookmarks.html file and click "Open"</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <strong>Find Your Bookmarks</strong>
+                                    <p>Look for an "Imported" folder in your bookmark manager</p>
                                 </div>
                             </div>
                         </div>
@@ -450,28 +512,35 @@
                             <div class="step">
                                 <div class="step-number">1</div>
                                 <div class="step-content">
-                                    <strong>Open Edge Menu</strong>
-                                    <p>Click the three dots (⋯) in the top-right corner of Edge</p>
+                                    <strong>Open Edge Settings</strong>
+                                    <p>Click the three dots (⋯) in the top-right corner → Settings</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">2</div>
                                 <div class="step-content">
-                                    <strong>Go to Favorites</strong>
-                                    <p>Select "Favorites" → "Import favorites"</p>
+                                    <strong>Go to Profiles</strong>
+                                    <p>In the left sidebar, click on "Profiles"</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">3</div>
                                 <div class="step-content">
-                                    <strong>Choose Source</strong>
-                                    <p>Select "Import from file" and choose "Favorites or bookmarks HTML file"</p>
+                                    <strong>Import Browser Data</strong>
+                                    <p>Under "Your profile", click "Import browser data"</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">4</div>
                                 <div class="step-content">
-                                    <strong>Import</strong>
+                                    <strong>Choose Import Source</strong>
+                                    <p>Select "Import from file" → "Favorites or bookmarks HTML file"</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <strong>Select File</strong>
                                     <p>Browse and select your bookmarks.html file, then click "Import"</p>
                                 </div>
                             </div>
@@ -491,22 +560,36 @@
                             <div class="step">
                                 <div class="step-number">2</div>
                                 <div class="step-content">
-                                    <strong>Import & Backup</strong>
-                                    <p>Click "Import and Backup" → "Import Bookmarks from HTML"</p>
+                                    <strong>Show All Bookmarks</strong>
+                                    <p>Click "Bookmarks" → "Show All Bookmarks" at the bottom</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">3</div>
                                 <div class="step-content">
-                                    <strong>Select File</strong>
-                                    <p>Choose your downloaded bookmarks.html file</p>
+                                    <strong>Import & Backup</strong>
+                                    <p>In the Library window, click "Import and Backup" in the toolbar</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">4</div>
                                 <div class="step-content">
-                                    <strong>Complete</strong>
-                                    <p>Your bookmarks will be imported automatically</p>
+                                    <strong>Import from HTML</strong>
+                                    <p>Select "Import Bookmarks from HTML"</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <strong>Select File</strong>
+                                    <p>Choose your downloaded bookmarks.html file and click "Open"</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">6</div>
+                                <div class="step-content">
+                                    <strong>Find Your Bookmarks</strong>
+                                    <p>Check the "Bookmarks Menu" section - imported bookmarks appear there</p>
                                 </div>
                             </div>
                         </div>
@@ -519,14 +602,14 @@
                                 <div class="step-number">1</div>
                                 <div class="step-content">
                                     <strong>Open File Menu</strong>
-                                    <p>Click "File" in the Safari menu bar</p>
+                                    <p>Click "File" in the Safari menu bar at the top</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">2</div>
                                 <div class="step-content">
-                                    <strong>Import Bookmarks</strong>
-                                    <p>Select "Import From" → "Bookmarks HTML File"</p>
+                                    <strong>Import From</strong>
+                                    <p>Hover over "Import From" and select "Bookmarks HTML File"</p>
                                 </div>
                             </div>
                             <div class="step">
@@ -543,6 +626,13 @@
                                     <p>Click "Import" to add your bookmarks to Safari</p>
                                 </div>
                             </div>
+                            <div class="step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <strong>Find Your Bookmarks</strong>
+                                    <p>Look in the sidebar for a folder named "Imported" with today's date</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -552,31 +642,66 @@
                             <div class="step">
                                 <div class="step-number">1</div>
                                 <div class="step-content">
-                                    <strong>Open Brave Menu</strong>
-                                    <p>Click the three lines (☰) in the top-right corner</p>
+                                    <strong>Open Brave Settings</strong>
+                                    <p>Click the three lines (☰) in the top-right corner → Settings</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">2</div>
                                 <div class="step-content">
-                                    <strong>Bookmarks Manager</strong>
-                                    <p>Go to "Bookmarks" → "Bookmark Manager"</p>
+                                    <strong>Get Started Section</strong>
+                                    <p>Under "Get Started", click "Import bookmarks and settings"</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">3</div>
                                 <div class="step-content">
-                                    <strong>Import</strong>
-                                    <p>Click the three dots (⋮) → "Import bookmarks"</p>
+                                    <strong>Choose Import Source</strong>
+                                    <p>Select "Import from file" → "Bookmarks HTML file"</p>
                                 </div>
                             </div>
                             <div class="step">
                                 <div class="step-number">4</div>
                                 <div class="step-content">
                                     <strong>Select File</strong>
-                                    <p>Choose "Bookmarks HTML file" and select your downloaded file</p>
+                                    <p>Browse and select your bookmarks.html file, then click "Import"</p>
                                 </div>
                             </div>
+                            <div class="step">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <strong>Find Your Bookmarks</strong>
+                                    <p>Check the "Others" section in bookmark manager (brave://bookmarks/)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="troubleshooting">
+                    <h4>🔧 Troubleshooting Tips</h4>
+                    <div class="troubleshooting-tips">
+                        <div class="tip">
+                            <strong>❌ Import not working?</strong>
+                            <ul>
+                                <li>Make sure your browser is up to date</li>
+                                <li>Try closing and reopening your browser</li>
+                                <li>Check if the HTML file is not corrupted</li>
+                                <li>Disable browser extensions temporarily</li>
+                            </ul>
+                        </div>
+                        <div class="tip">
+                            <strong>📁 Can't find imported bookmarks?</strong>
+                            <ul>
+                                <li><strong>Chrome:</strong> Look for "Imported" folder in bookmark manager</li>
+                                <li><strong>Firefox:</strong> Check "Bookmarks Menu" section</li>
+                                <li><strong>Safari:</strong> Look for "Imported" folder with today's date</li>
+                                <li><strong>Brave:</strong> Check "Others" section in bookmark manager</li>
+                            </ul>
+                        </div>
+                        <div class="tip">
+                            <strong>🔄 Alternative Method</strong>
+                            <p>If import fails, try dragging the HTML file directly into your browser's bookmark bar or bookmark manager.</p>
                         </div>
                     </div>
                 </div>
