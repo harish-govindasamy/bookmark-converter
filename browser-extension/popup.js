@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load saved settings
     loadSettings();
     
+    // Initialize folder selector
+    initializeFolderSelector();
+    
     // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -319,6 +322,123 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error loading settings:', error);
+        }
+    }
+    
+    async function initializeFolderSelector() {
+        const folderNameInput = document.getElementById('folderName');
+        const dropdownBtn = document.getElementById('folderDropdownBtn');
+        const folderDropdown = document.getElementById('folderDropdown');
+        const folderList = document.querySelector('.folder-list');
+        const createNewBtn = document.getElementById('createNewFolder');
+        
+        let folders = [];
+        let isDropdownOpen = false;
+        
+        // Load folders
+        await loadFolders();
+        
+        // Toggle dropdown
+        dropdownBtn.addEventListener('click', () => {
+            isDropdownOpen = !isDropdownOpen;
+            folderDropdown.style.display = isDropdownOpen ? 'block' : 'none';
+            dropdownBtn.textContent = isDropdownOpen ? '▲' : '▼';
+        });
+        
+        // Search functionality
+        folderNameInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            filterFolders(searchTerm);
+        });
+        
+        // Create new folder
+        createNewBtn.addEventListener('click', () => {
+            const newFolderName = folderNameInput.value.trim();
+            if (newFolderName) {
+                selectFolder(newFolderName);
+                closeDropdown();
+            }
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.folder-selector')) {
+                closeDropdown();
+            }
+        });
+        
+        async function loadFolders() {
+            try {
+                const response = await chrome.runtime.sendMessage({ action: 'getBookmarkFolders' });
+                if (response && response.folders) {
+                    folders = response.folders;
+                    renderFolders();
+                }
+            } catch (error) {
+                console.error('Error loading folders:', error);
+            }
+        }
+        
+        function renderFolders() {
+            folderList.innerHTML = '';
+            folders.forEach(folder => {
+                const folderItem = document.createElement('div');
+                folderItem.className = 'folder-item';
+                folderItem.innerHTML = `
+                    <span class="folder-icon">📁</span>
+                    <span class="folder-name">${folder.title}</span>
+                    <span class="folder-count">${folder.children ? folder.children.length : 0}</span>
+                `;
+                
+                folderItem.addEventListener('click', () => {
+                    selectFolder(folder.title);
+                    closeDropdown();
+                });
+                
+                folderList.appendChild(folderItem);
+            });
+        }
+        
+        function filterFolders(searchTerm) {
+            const folderItems = document.querySelectorAll('.folder-item');
+            let hasVisibleFolders = false;
+            
+            folderItems.forEach(item => {
+                const folderName = item.querySelector('.folder-name').textContent.toLowerCase();
+                if (folderName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                    hasVisibleFolders = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Show create new button if no exact match
+            const exactMatch = folders.some(f => f.title.toLowerCase() === searchTerm);
+            createNewBtn.style.display = exactMatch ? 'none' : 'block';
+        }
+        
+        function selectFolder(folderName) {
+            folderNameInput.value = folderName;
+            
+            // Remove previous selection
+            document.querySelectorAll('.folder-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Highlight selected folder
+            const folderItems = document.querySelectorAll('.folder-item');
+            folderItems.forEach(item => {
+                if (item.querySelector('.folder-name').textContent === folderName) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+        
+        function closeDropdown() {
+            isDropdownOpen = false;
+            folderDropdown.style.display = 'none';
+            dropdownBtn.textContent = '▼';
         }
     }
 });
