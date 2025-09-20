@@ -12,9 +12,50 @@ import json
 
 app = Flask(__name__)
 
+def clean_and_process_urls(text):
+    """
+    Smart URL processing: clean up messy text and convert to proper URLs
+    """
+    import re
+    
+    # Split by lines and process each line
+    lines = text.split('\n')
+    processed_urls = []
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Remove common prefixes and formatting
+        line = re.sub(r'^[→\-\*\•\d+\.\)]\s*', '', line)  # Remove arrows, bullets, numbers
+        line = re.sub(r'^[A-Za-z\s]+\(', '', line)  # Remove text before parentheses
+        line = re.sub(r'\)$', '', line)  # Remove trailing parentheses
+        
+        # Extract domain from various formats
+        # Pattern 1: Already has http/https
+        if re.match(r'https?://', line):
+            processed_urls.append(line)
+            continue
+            
+        # Pattern 2: Domain with path (e.g., "example.com/path")
+        if re.match(r'^[a-zA-Z0-9][a-zA-Z0-9\-\.]*\.[a-zA-Z]{2,}', line):
+            if not line.startswith('http'):
+                line = 'https://' + line
+            processed_urls.append(line)
+            continue
+            
+        # Pattern 3: Just domain name (e.g., "example.com")
+        if re.match(r'^[a-zA-Z0-9][a-zA-Z0-9\-\.]*\.[a-zA-Z]{2,}$', line):
+            line = 'https://' + line
+            processed_urls.append(line)
+            continue
+    
+    return processed_urls
+
 def txt_to_bookmarks_html(urls_text, folder_name="Imported Bookmarks"):
     """
-    Convert URLs text to HTML bookmarks format
+    Convert URLs text to HTML bookmarks format with smart processing
     """
     html_template = """<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <!-- This is an automatically generated file.
@@ -31,9 +72,11 @@ def txt_to_bookmarks_html(urls_text, folder_name="Imported Bookmarks"):
 </DL><p>"""
     
     bookmark_items = []
-    urls = [url.strip() for url in urls_text.split('\n') if url.strip()]
     
-    for url in urls:
+    # Use smart URL processing
+    processed_urls = clean_and_process_urls(urls_text)
+    
+    for url in processed_urls:
         if url and (url.startswith('http://') or url.startswith('https://')):
             # Extract domain name for bookmark title
             try:

@@ -44,6 +44,26 @@
             opacity: 0.9;
         }
         
+        .feature-highlight {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        
+        .feature-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+        
         .content {
             padding: 40px;
         }
@@ -406,6 +426,10 @@
         <div class="header">
             <h1>🔖 Bookmark Converter</h1>
             <p>Transform your URLs into organized browser bookmarks</p>
+            <div class="feature-highlight">
+                <span class="feature-badge">✨ NEW</span>
+                <span>Smart URL Processing - Automatically cleans messy text and adds https://</span>
+            </div>
         </div>
         
         <div class="content">
@@ -417,7 +441,7 @@
                 
                 <div class="form-group">
                     <label for="urls">URLs (one per line):</label>
-                    <textarea id="urls" name="urls" placeholder="Paste your URLs here, one per line...&#10;&#10;Example:&#10;https://www.google.com&#10;https://github.com&#10;https://stackoverflow.com"></textarea>
+                    <textarea id="urls" name="urls" placeholder="Paste your URLs here, one per line...&#10;&#10;✨ SMART PROCESSING: We automatically clean up messy text!&#10;&#10;Examples:&#10;https://www.google.com&#10;→ Toptal (toptal.com)&#10;github.com&#10;Remote OK (remoteok.com)"></textarea>
                 </div>
                 
                 <button type="submit" class="btn" id="convertBtn">Convert to Bookmarks</button>
@@ -432,7 +456,8 @@
             
             <div class="examples">
                 <h3>Quick Examples:</h3>
-                <button class="example-btn" onclick="loadExample('job-sites')">Job Search Sites</button>
+                <button class="example-btn" onclick="loadExample('job-sites')">Clean URLs</button>
+                <button class="example-btn" onclick="loadExample('messy-text')">✨ Messy Text (Auto-Clean)</button>
                 <button class="example-btn" onclick="loadExample('tech-sites')">Tech Resources</button>
                 <button class="example-btn" onclick="loadExample('news-sites')">News Sites</button>
             </div>
@@ -749,6 +774,28 @@ https://remoteok.com
 https://angel.co
 https://linkedin.com
 https://upwork.com`,
+            'messy-text': `Here are 47 proven platforms that offer remote jobs:
+
+→ Toptal (toptal.com)
+→ SkipTheDrive (skipthedrive.com)
+→ NoDesk (nodesk.co)
+→ RemoteHabits (remotehabits.com)
+→ Remotive (remotive.com)
+→ Remote4Me (remote4me.com)
+→ Pangian (pangian.com)
+→ Remotees (remotees.com)
+→ JustRemote (justremote.co)
+→ RemoteCrew (remotecrew.io)
+→ Europe Remotely (europeremotely.com)
+→ Remote OK Europe (remoteok.io/europe)
+→ Remote OK Asia (remoteok.io/asia)
+→ FlexJobs (flexjobs.com)
+→ Remote co (remote.co)
+→ We Work Remotely (weworkremotely.com)
+→ Remote OK (remoteok.com)
+→ AngelList (angel.co)
+→ LinkedIn (linkedin.com)
+→ Upwork (upwork.com)`,
             'tech-sites': `https://github.com
 https://stackoverflow.com
 https://developer.mozilla.org
