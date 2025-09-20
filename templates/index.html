@@ -862,9 +862,14 @@
                     <span class="help-text">How to Import Bookmarks</span>
                     <div class="help-tooltip" id="helpTooltip">Click to see browser import guides</div>
                 </button>
-                <button class="example-btn" onclick="installExtension()" style="background: #28a745; border-color: #28a745; color: white;">
-                    📦 Install Extension
-                </button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="example-btn" onclick="installExtension()" style="background: #28a745; border-color: #28a745; color: white; font-size: 12px;">
+                📦 Auto-Detect
+            </button>
+            <button class="example-btn" onclick="showAllExtensions()" style="background: #4facfe; border-color: #4facfe; color: white; font-size: 12px;">
+                🌐 All Extensions
+            </button>
+        </div>
             </div>
         </div>
         
@@ -1399,13 +1404,28 @@ https://www.theverge.com`
                 <p style="margin-top: 15px; font-size: 14px; color: #666;">
                     💡 <strong>Pro tip:</strong> You can also use the download option for bulk import!
                 </p>
-                <div style="margin-top: 20px; padding: 15px; background: #1a3a1a; border: 1px solid #28a745; border-radius: 8px;">
-                    <h4 style="color: #28a745; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">🚀 Want Even Easier Bookmarking?</h4>
-                    <p style="color: #888; margin-bottom: 15px; font-size: 13px;">Install our browser extension for direct bookmark integration without any manual steps!</p>
-                    <button onclick="installExtension()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;">
-                        📦 Install Extension
-                    </button>
-                </div>
+        <div style="margin-top: 20px; padding: 15px; background: #1a3a1a; border: 1px solid #28a745; border-radius: 8px;">
+            <h4 style="color: #28a745; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">🚀 Want Even Easier Bookmarking?</h4>
+            <p style="color: #888; margin-bottom: 15px; font-size: 13px;">Install our browser extension for direct bookmark integration without any manual steps!</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <button onclick="installExtension()" style="background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;">
+                    📦 Auto-Detect Browser
+                </button>
+                <button onclick="showAllExtensions()" style="background: #4facfe; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;">
+                    🌐 All Extensions
+                </button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-chrome.zip" target="_blank" style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; text-align: center; transition: all 0.2s ease;">
+                    🔥 Chrome/Edge/Brave
+                </a>
+                <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/firefox/bookmark-converter-pro-firefox-dev.zip" target="_blank" style="background: #ff9500; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; text-align: center; transition: all 0.2s ease;">
+                    🦊 Firefox
+                </a>
+            </div>
+        </div>
             `;
             
             showResult(bookmarkHTML, 'success');
@@ -1659,6 +1679,91 @@ https://www.theverge.com`
         
         function closeInstallModal() {
             const modal = document.getElementById('installModal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        function showAllExtensions() {
+            const modalHTML = `
+                <div class="modal-overlay active" id="allExtensionsModal" onclick="closeAllExtensionsModal()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <div class="modal-header">
+                            <h3>🌐 All Browser Extensions</h3>
+                            <button class="close-btn" onclick="closeAllExtensionsModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                                <h4 style="color: #28a745; margin-bottom: 15px;">🚀 Choose Your Browser</h4>
+                                <p style="color: #888; margin-bottom: 15px;">Download the extension optimized for your browser</p>
+                            </div>
+                            
+                            <div style="display: grid; gap: 20px;">
+                                <!-- Chrome-based Browsers -->
+                                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                                    <h4 style="color: #ff6b6b; margin-bottom: 15px;">🔥 Chrome-based Browsers</h4>
+                                    <p style="color: #888; margin-bottom: 15px; font-size: 14px;">Works on Chrome, Edge, Brave, Opera, Vivaldi</p>
+                                    
+                                    <div style="display: grid; gap: 15px;">
+                                        <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #2a1a1a; border-radius: 6px;">
+                                            <div style="background: #ff6b6b; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">📦</div>
+                                            <div style="flex: 1;">
+                                                <strong style="color: #fff;">Chrome Extension (Manifest V3)</strong>
+                                                <p style="color: #888; margin: 5px 0; font-size: 13px;">Optimized for Chrome, Edge, Brave, Opera, Vivaldi</p>
+                                                <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-chrome.zip" target="_blank" style="color: #ff6b6b; text-decoration: none; font-size: 12px; font-weight: 600;">📥 Download Chrome Extension</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Firefox -->
+                                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                                    <h4 style="color: #ff9500; margin-bottom: 15px;">🦊 Firefox</h4>
+                                    <p style="color: #888; margin-bottom: 15px; font-size: 14px;">Two installation methods available</p>
+                                    
+                                    <div style="display: grid; gap: 15px;">
+                                        <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #2a1a1a; border-radius: 6px;">
+                                            <div style="background: #28a745; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">📦</div>
+                                            <div style="flex: 1;">
+                                                <strong style="color: #fff;">Method 1: Temporary Installation (Recommended)</strong>
+                                                <p style="color: #888; margin: 5px 0; font-size: 13px;">Download ZIP → Extract → Load Temporary Add-on</p>
+                                                <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/firefox/bookmark-converter-pro-firefox-dev.zip" target="_blank" style="color: #28a745; text-decoration: none; font-size: 12px; font-weight: 600;">📥 Download Firefox ZIP</a>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #2a1a1a; border-radius: 6px;">
+                                            <div style="background: #4facfe; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">📦</div>
+                                            <div style="flex: 1;">
+                                                <strong style="color: #fff;">Method 2: Permanent Installation (Alternative)</strong>
+                                                <p style="color: #888; margin: 5px 0; font-size: 13px;">Download XPI → Install Add-on From File</p>
+                                                <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/firefox/bookmark-converter-pro.xpi" target="_blank" style="color: #4facfe; text-decoration: none; font-size: 12px; font-weight: 600;">📥 Download Firefox XPI</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #3a1a1a; border: 1px solid #ff6b6b; border-radius: 8px; padding: 15px; margin-top: 20px;">
+                                <h4 style="color: #ff6b6b; margin-bottom: 10px;">💡 Installation Tips:</h4>
+                                <ul style="color: #888; margin: 0; padding-left: 20px; font-size: 13px;">
+                                    <li><strong>Chrome-based:</strong> Extract ZIP → Load unpacked → Select folder</li>
+                                    <li><strong>Firefox ZIP:</strong> Extract ZIP → about:debugging → Load Temporary Add-on → Select manifest.json</li>
+                                    <li><strong>Firefox XPI:</strong> about:addons → Install Add-on From File → Select .xpi</li>
+                                    <li>All extensions add bookmarks at the <strong>TOP</strong> for easy access!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeAllExtensionsModal() {
+            const modal = document.getElementById('allExtensionsModal');
             if (modal) {
                 modal.remove();
                 document.body.style.overflow = 'auto';
