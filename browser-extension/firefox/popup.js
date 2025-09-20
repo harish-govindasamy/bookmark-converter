@@ -160,29 +160,61 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error('Extension context invalidated');
                 }
                 
-                // Add timeout to prevent infinite loading
-                const response = await Promise.race([
-                    browser.runtime.sendMessage({ action: 'getBookmarkFolders' }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-                ]);
-                
-                console.log('Folder response:', response);
-                
-                if (response && response.success && response.folders) {
-                    folders = response.folders;
-                    console.log('Loaded folders:', folders);
-                    renderFolders();
-                } else {
-                    console.error('Failed to load folders:', response);
-                    // Show fallback with default suggestions
-                    folders = [
-                        { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
-                        { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
-                        { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
-                        { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
-                    ];
-                    renderFolders();
+                // Try direct API call first
+                try {
+                    const directFolders = await getFoldersDirectAPI();
+                    if (directFolders && directFolders.length > 0) {
+                        folders = directFolders;
+                        console.log('Loaded folders via direct API:', folders);
+                        renderFolders();
+                        return;
+                    }
+                } catch (directError) {
+                    console.warn('Direct API failed:', directError);
                 }
+                
+                // Fallback 1: Try background script with timeout
+                try {
+                    const response = await Promise.race([
+                        browser.runtime.sendMessage({ action: 'getBookmarkFolders' }),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+                    ]);
+                    
+                    console.log('Folder response:', response);
+                    
+                    if (response && response.success && response.folders) {
+                        folders = response.folders;
+                        console.log('Loaded folders via background script:', folders);
+                        renderFolders();
+                        return;
+                    }
+                } catch (bgError) {
+                    console.warn('Background script failed:', bgError);
+                }
+                
+                // Fallback 2: Try cached folders
+                try {
+                    const cachedFolders = await getCachedFolders();
+                    if (cachedFolders && cachedFolders.length > 0) {
+                        folders = cachedFolders;
+                        console.log('Loaded folders from cache:', folders);
+                        renderFolders();
+                        return;
+                    }
+                } catch (cacheError) {
+                    console.warn('Cache failed:', cacheError);
+                }
+                
+                // Final fallback: Show default suggestions
+                console.error('All methods failed, using defaults');
+                folders = [
+                    { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+                ];
+                renderFolders();
+                
             } catch (error) {
                 console.error('Error loading folders:', error);
                 // Show fallback with default suggestions
@@ -193,6 +225,74 @@ document.addEventListener('DOMContentLoaded', function() {
                     { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
                 ];
                 renderFolders();
+            }
+        }
+        
+        async function getFoldersDirectAPI() {
+            try {
+                const bookmarkTree = await browser.bookmarks.getTree();
+                const folders = [];
+                
+                // Get bookmark toolbar
+                const bookmarkToolbar = bookmarkTree[0]?.children?.find(node => 
+                    node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+                );
+                
+                if (bookmarkToolbar && bookmarkToolbar.children) {
+                    for (const node of bookmarkToolbar.children) {
+                        if (node.children && !node.url) {
+                            const bookmarkCount = node.children.filter(child => child.url).length;
+                            folders.push({
+                                id: node.id,
+                                title: node.title,
+                                children: node.children.filter(child => child.url),
+                                bookmarkCount: bookmarkCount
+                            });
+                        }
+                    }
+                }
+                
+                // Always add default suggestions
+                const defaultSuggestions = [
+                    { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+                ];
+                
+                folders.push(...defaultSuggestions);
+                return folders;
+            } catch (error) {
+                console.error('Direct API failed:', error);
+                return null;
+            }
+        }
+        
+        async function getCachedFolders() {
+            try {
+                const result = await browser.storage.local.get(['cachedFolders', 'cacheTimestamp']);
+                const now = Date.now();
+                const cacheAge = now - (result.cacheTimestamp || 0);
+                
+                // Use cache if it's less than 1 hour old
+                if (result.cachedFolders && cacheAge < 3600000) {
+                    return result.cachedFolders;
+                }
+                return null;
+            } catch (error) {
+                console.error('Cache retrieval failed:', error);
+                return null;
+            }
+        }
+        
+        async function cacheFolders(folders) {
+            try {
+                await browser.storage.local.set({
+                    cachedFolders: folders,
+                    cacheTimestamp: Date.now()
+                });
+            } catch (error) {
+                console.error('Cache storage failed:', error);
             }
         }
         
@@ -208,6 +308,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
                         <div style="font-weight: 600; margin-bottom: 5px;">No folders found</div>
                         <div style="font-size: 12px;">Type a name above to create your first folder!</div>
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(79, 172, 254, 0.1); border-radius: 6px; border: 1px solid rgba(79, 172, 254, 0.3);">
+                            <div style="font-size: 12px; color: #4facfe; font-weight: 600; margin-bottom: 5px;">💡 Quick Start:</div>
+                            <div style="font-size: 11px; color: #888;">Just type a folder name in the input field above!</div>
+                        </div>
                     </div>
                 `;
                 folderList.appendChild(noFoldersMsg);
@@ -242,6 +346,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 folderList.appendChild(folderItem);
             });
+            
+            // Cache successful folder loads for future use
+            if (folders.length > 0 && !folders.every(f => f.isSuggestion)) {
+                cacheFolders(folders);
+            }
         }
         
         function filterFolders(searchTerm) {

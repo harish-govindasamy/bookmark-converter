@@ -79,7 +79,30 @@ class BookmarkConverterPro {
             if (this.folders.length === 0) {
                 this.loadDefaultFolders();
             }
+            
+            // Enable input-only mode as ultimate fallback
+            this.enableInputOnlyMode();
         }
+    }
+
+    enableInputOnlyMode() {
+        // Make the input field always editable and functional
+        this.folderNameInput.removeAttribute('readonly');
+        this.folderNameInput.placeholder = 'Type folder name and press Enter...';
+        
+        // Add Enter key support for quick folder creation
+        this.folderNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const folderName = this.folderNameInput.value.trim();
+                if (folderName) {
+                    this.selectFolder(folderName);
+                    this.closeDropdown();
+                }
+            }
+        });
+        
+        // Show helpful message
+        console.log('Input-only mode enabled - users can type folder names directly');
     }
 
     setupFolderSelectorEvents() {
@@ -126,7 +149,7 @@ class BookmarkConverterPro {
                 throw new Error('Extension context invalidated');
             }
 
-            // Try direct API call first
+            // Try direct API call first (most reliable)
             const folders = await this.getFoldersDirectAPI();
             if (folders && folders.length > 0) {
                 this.folders = folders;
@@ -135,20 +158,51 @@ class BookmarkConverterPro {
                 return;
             }
 
-            // Fallback to background script with timeout
-            const response = await Promise.race([
-                chrome.runtime.sendMessage({ action: 'getBookmarkFolders' }),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-            ]);
-            
-            if (response && response.success && response.folders) {
-                this.folders = response.folders;
-                this.renderFolders();
-                console.log('Folders loaded via background script:', response.folders.length);
-                return;
+            // Fallback 1: Try background script with timeout
+            try {
+                const response = await Promise.race([
+                    chrome.runtime.sendMessage({ action: 'getBookmarkFolders' }),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+                ]);
+                
+                if (response && response.success && response.folders) {
+                    this.folders = response.folders;
+                    this.renderFolders();
+                    console.log('Folders loaded via background script:', response.folders.length);
+                    return;
+                }
+            } catch (bgError) {
+                console.warn('Background script failed:', bgError);
             }
 
-            throw new Error('No folders found');
+            // Fallback 2: Try alternative bookmark API approach
+            try {
+                const altFolders = await this.getFoldersAlternativeAPI();
+                if (altFolders && altFolders.length > 0) {
+                    this.folders = altFolders;
+                    this.renderFolders();
+                    console.log('Folders loaded via alternative API:', altFolders.length);
+                    return;
+                }
+            } catch (altError) {
+                console.warn('Alternative API failed:', altError);
+            }
+
+            // Fallback 3: Use cached folders from storage
+            try {
+                const cachedFolders = await this.getCachedFolders();
+                if (cachedFolders && cachedFolders.length > 0) {
+                    this.folders = cachedFolders;
+                    this.renderFolders();
+                    console.log('Folders loaded from cache:', cachedFolders.length);
+                    return;
+                }
+            } catch (cacheError) {
+                console.warn('Cache failed:', cacheError);
+            }
+
+            // Final fallback: Always show default suggestions
+            throw new Error('All methods failed, using defaults');
 
         } catch (error) {
             console.error('Error loading folders:', error);
@@ -210,6 +264,75 @@ class BookmarkConverterPro {
         }
     }
 
+    async getFoldersAlternativeAPI() {
+        try {
+            // Alternative approach: Get all bookmarks and group by parent
+            const allBookmarks = await chrome.bookmarks.getTree();
+            const folders = [];
+            
+            // Look for folders in different locations
+            const root = allBookmarks[0];
+            if (root && root.children) {
+                for (const child of root.children) {
+                    if (child.children && !child.url) {
+                        // This is a folder
+                        const bookmarkCount = child.children.filter(item => item.url).length;
+                        if (bookmarkCount > 0 || child.title.toLowerCase().includes('bookmark')) {
+                            folders.push({
+                                id: child.id,
+                                title: child.title,
+                                children: child.children.filter(item => item.url),
+                                bookmarkCount: bookmarkCount
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Always add default suggestions
+            const defaultSuggestions = [
+                { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+            ];
+            
+            folders.push(...defaultSuggestions);
+            return folders;
+        } catch (error) {
+            console.error('Alternative API failed:', error);
+            return null;
+        }
+    }
+
+    async getCachedFolders() {
+        try {
+            const result = await chrome.storage.local.get(['cachedFolders', 'cacheTimestamp']);
+            const now = Date.now();
+            const cacheAge = now - (result.cacheTimestamp || 0);
+            
+            // Use cache if it's less than 1 hour old
+            if (result.cachedFolders && cacheAge < 3600000) {
+                return result.cachedFolders;
+            }
+            return null;
+        } catch (error) {
+            console.error('Cache retrieval failed:', error);
+            return null;
+        }
+    }
+
+    async cacheFolders(folders) {
+        try {
+            await chrome.storage.local.set({
+                cachedFolders: folders,
+                cacheTimestamp: Date.now()
+            });
+        } catch (error) {
+            console.error('Cache storage failed:', error);
+        }
+    }
+
     loadDefaultFolders() {
         this.folders = [
             { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
@@ -233,6 +356,11 @@ class BookmarkConverterPro {
             const folderItem = this.createFolderItem(folder, index);
             this.folderList.appendChild(folderItem);
         });
+
+        // Cache successful folder loads for future use
+        if (this.folders.length > 0 && !this.folders.every(f => f.isSuggestion)) {
+            this.cacheFolders(this.folders);
+        }
     }
 
     createFolderItem(folder, index) {
@@ -271,6 +399,10 @@ class BookmarkConverterPro {
             <div class="title">No folders found</div>
             <div class="subtitle">Type a name above to create your first folder!</div>
             <div class="debug-hint">Check browser console for debugging info</div>
+            <div style="margin-top: 15px; padding: 10px; background: rgba(79, 172, 254, 0.1); border-radius: 6px; border: 1px solid rgba(79, 172, 254, 0.3);">
+                <div style="font-size: 12px; color: #4facfe; font-weight: 600; margin-bottom: 5px;">💡 Quick Start:</div>
+                <div style="font-size: 11px; color: #888;">Just type a folder name in the input field above and press Enter!</div>
+            </div>
         `;
         this.folderList.appendChild(noFoldersMsg);
     }
