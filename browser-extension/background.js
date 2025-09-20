@@ -1,5 +1,8 @@
 // Background script for Bookmark Converter Pro Extension
 
+// Ensure service worker is properly initialized
+console.log('Bookmark Converter Pro service worker starting...');
+
 // Handle extension installation
 chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason === 'install') {
@@ -32,6 +35,7 @@ chrome.commands.onCommand.addListener((command) => {
 
 // Handle messages from content scripts and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('Message received:', request.action);
     if (request.action === 'bookmarkCurrentPage') {
         bookmarkCurrentPage(sender.tab)
             .then(result => sendResponse(result))
@@ -269,35 +273,43 @@ chrome.bookmarks.onRemoved.addListener((id, removeInfo) => {
 // Context menu integration
 chrome.runtime.onInstalled.addListener(() => {
     // Create context menu for bookmarking
-    chrome.contextMenus.create({
-        id: 'bookmarkWithConverter',
-        title: 'Bookmark with Converter Pro',
-        contexts: ['page', 'link']
-    });
-    
-    chrome.contextMenus.create({
-        id: 'bookmarkAllTabs',
-        title: 'Bookmark All Tabs',
-        contexts: ['page']
-    });
+    try {
+        chrome.contextMenus.create({
+            id: 'bookmarkWithConverter',
+            title: 'Bookmark with Converter Pro',
+            contexts: ['page', 'link']
+        });
+        
+        chrome.contextMenus.create({
+            id: 'bookmarkAllTabs',
+            title: 'Bookmark All Tabs',
+            contexts: ['page']
+        });
+    } catch (error) {
+        console.log('Context menu creation failed:', error);
+    }
 });
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId === 'bookmarkWithConverter') {
-        if (info.linkUrl) {
-            // Bookmark the link
-            await chrome.bookmarks.create({
-                parentId: '1',
-                title: info.linkText || new URL(info.linkUrl).hostname,
-                url: info.linkUrl,
-                index: 0 // Add at the beginning (top) instead of end
-            });
-        } else {
-            // Bookmark the current page
-            await bookmarkCurrentPage(tab);
+    try {
+        if (info.menuItemId === 'bookmarkWithConverter') {
+            if (info.linkUrl) {
+                // Bookmark the link
+                await chrome.bookmarks.create({
+                    parentId: '1',
+                    title: info.linkText || new URL(info.linkUrl).hostname,
+                    url: info.linkUrl,
+                    index: 0 // Add at the beginning (top) instead of end
+                });
+            } else {
+                // Bookmark the current page
+                await bookmarkCurrentPage(tab);
+            }
+        } else if (info.menuItemId === 'bookmarkAllTabs') {
+            await bookmarkAllTabs();
         }
-    } else if (info.menuItemId === 'bookmarkAllTabs') {
-        await bookmarkAllTabs();
+    } catch (error) {
+        console.error('Context menu action failed:', error);
     }
 });
