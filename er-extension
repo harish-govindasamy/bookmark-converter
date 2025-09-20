@@ -1,0 +1,30 @@
+[33mbb1814d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add multiple fallback strategies for folder loading
+[33m583379e[m Fix infinite loading issue in browser extension
+[33m3de3b8d[m Add Testing HTML for Extension Fixes and Improvements
+[33mc369981[m Enterprise-Grade Chrome Extension: Professional UI and Comprehensive Functionality
+[33m35d71ac[m Fix Chrome Extension UI Update: Proper DOM Element Handling
+[33m7afe972[m Enhanced Chrome Extension Debugging: Comprehensive Folder Loading Debug
+[33m2d831f3[m Fix Chrome Extension Folder Loading: Add Debugging and Fallback
+[33mdc6f47b[m Fix Chrome Extension: Add Missing popup.js File
+[33me8fc22f[m Update Firefox Installation Guide: Fix 'Not Verified' Error
+[33macfa57f[m Fix Firefox Extension: Bookmark Functionality and Corrupt File Error
+[33m10277e2[m Add Both Chrome and Firefox Extension Download Links with Improved UI
+[33m4db22db[m Add Firefox XPI Support and Dual Installation Methods
+[33m9855fec[m Reorganize Extensions: Separate Chrome-based (Manifest V3) and Firefox (Manifest V2)
+[33m05c66db[m Create Universal Browser Extension - Works on ALL Browsers!
+[33mf8692ec[m Fix popup folder loading issues with debugging and fallbacks
+[33m0824c29[m Improve folder detection for different browser scenarios
+[33mab6177c[m Fix popup folder selection - show all folders by default
+[33m3323dfc[m Add smart folder selection to extension popup
+[33mbdf7406[m Fix JavaScript errors and extension context issues
+[33mf623e2b[m Add amazing smart folder selection system
+[33m5d5c94f[m Fix extension errors and add troubleshooting guide
+[33m366e939[m Add folder selection dialog and fix extension functionality
+[33me89e410[m Fix bookmark placement - new bookmarks now appear at TOP instead of bottom
+[33md5cdd0b[m Fix extension download link to use extension-only ZIP
+[33m8b806d2[m Add extension-only ZIP file for direct download
+[33m5bb1e72[m Add direct download links and comprehensive extension files guide
+[33mbc04afc[m Add extension installation guide with browser detection and step-by-step instructions
+[33m7af099c[m Add comprehensive testing and publishing guides for browser extension
+[33m87244f9[m Optimize layout: smaller title/heading and wider form section
+[33m3ebef53[m Fix usage statistics text color contrast - make text visible on dark background

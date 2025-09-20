@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const createNewBtn = document.getElementById('createNewFolder');
         
         let folders = [];
-        let isDropdownOpen = true; // Start with dropdown open
+        let isDropdownOpen = false; // Start with dropdown closed
         
         // Show loading state
         folderList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Loading folders...</div>';
