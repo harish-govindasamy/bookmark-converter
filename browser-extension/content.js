@@ -70,6 +70,12 @@ function injectBookmarkButton() {
 // Bookmark current page with folder selection
 async function bookmarkCurrentPage() {
     try {
+        // Check if extension context is still valid
+        if (!chrome.runtime?.id) {
+            showNotification('❌ Extension context invalidated. Please reload the page.', 'error');
+            return;
+        }
+        
         // Show folder selection dialog
         const folderName = await showFolderSelectionDialog();
         if (!folderName) {
@@ -81,28 +87,47 @@ async function bookmarkCurrentPage() {
             folderName: folderName
         });
         
-        if (response.success) {
+        if (response && response.success) {
             showNotification(`✅ Page bookmarked in "${folderName}"!`, 'success');
         } else {
-            showNotification('❌ ' + response.error, 'error');
+            const errorMsg = response?.error || 'Unknown error occurred';
+            showNotification('❌ ' + errorMsg, 'error');
         }
     } catch (error) {
         console.error('Error bookmarking page:', error);
-        showNotification('❌ Error bookmarking page', 'error');
+        if (error.message.includes('Extension context invalidated')) {
+            showNotification('❌ Extension was reloaded. Please refresh the page.', 'error');
+        } else {
+            showNotification('❌ Error bookmarking page', 'error');
+        }
     }
 }
 
 // Show smart folder selection dialog
 function showFolderSelectionDialog() {
     return new Promise((resolve) => {
+        // Check if dialog is already open
+        if (document.getElementById('bookmark-folder-dialog')) {
+            resolve(null);
+            return;
+        }
+        
         // Get existing folders first
         chrome.runtime.sendMessage({ action: 'getBookmarkFolders' }, (response) => {
+            // Handle extension context invalidation
+            if (chrome.runtime.lastError) {
+                console.error('Extension context error:', chrome.runtime.lastError);
+                resolve(null);
+                return;
+            }
+            
             if (!response || !response.folders) {
                 response = { folders: [] };
             }
             
             // Create modal overlay
             const overlay = document.createElement('div');
+            overlay.id = 'bookmark-folder-dialog';
             overlay.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -131,7 +156,7 @@ function showFolderSelectionDialog() {
             `;
             
             // Generate folder options HTML
-            const folderOptions = response.folders.map(folder => 
+            const folderOptionsHTML = response.folders.map(folder => 
                 `<div class="folder-option" data-folder="${folder.title}" style="padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 10px;">
                     <span style="font-size: 16px;">📁</span>
                     <span style="flex: 1; font-size: 14px; color: #333;">${folder.title}</span>
@@ -153,7 +178,7 @@ function showFolderSelectionDialog() {
                     </div>
                     
                     <div id="folderList" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; padding: 10px;">
-                        ${folderOptions}
+                        ${folderOptionsHTML}
                         <div id="noFolders" style="text-align: center; color: #666; padding: 20px; font-style: italic; display: ${response.folders.length === 0 ? 'block' : 'none'};">
                             No folders found. Create a new one above!
                         </div>
