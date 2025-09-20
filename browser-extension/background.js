@@ -66,7 +66,8 @@ async function bookmarkCurrentPage(tab) {
         const bookmark = await chrome.bookmarks.create({
             parentId: '1', // Bookmarks bar
             title: title,
-            url: tab.url
+            url: tab.url,
+            index: 0 // Add at the beginning (top) instead of end
         });
         
         return { success: true, bookmark: bookmark };
@@ -93,7 +94,8 @@ async function bookmarkAllTabs() {
         const folderName = `All Tabs - ${new Date().toLocaleDateString()}`;
         const folder = await chrome.bookmarks.create({
             title: folderName,
-            parentId: '1'
+            parentId: '1',
+            index: 0 // Add folder at the beginning (top) instead of end
         });
         
         let successCount = 0;
@@ -137,7 +139,8 @@ async function processAndBookmark(data) {
         // Create folder
         const folder = await chrome.bookmarks.create({
             title: folderName || 'My Bookmarks',
-            parentId: '1'
+            parentId: '1',
+            index: 0 // Add folder at the beginning (top) instead of end
         });
         
         // Add bookmarks
@@ -243,7 +246,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             await chrome.bookmarks.create({
                 parentId: '1',
                 title: info.linkText || new URL(info.linkUrl).hostname,
-                url: info.linkUrl
+                url: info.linkUrl,
+                index: 0 // Add at the beginning (top) instead of end
             });
         } else {
             // Bookmark the current page
