@@ -233,13 +233,18 @@ async function processAndBookmark(data) {
 // Get bookmark bar folders (main folders users see)
 async function getBookmarkFolders() {
     try {
+        console.log('Getting bookmark folders...');
         const bookmarkTree = await chrome.bookmarks.getTree();
+        console.log('Bookmark tree:', bookmarkTree);
+        
         const folders = [];
         
         // Get bookmark bar (id: "1") - this is what users see in their browser
         const bookmarkBar = bookmarkTree[0]?.children?.find(node => node.id === "1");
+        console.log('Bookmark bar:', bookmarkBar);
         
         if (bookmarkBar && bookmarkBar.children) {
+            console.log('Bookmark bar children:', bookmarkBar.children);
             // Find folders in bookmark bar
             for (const node of bookmarkBar.children) {
                 if (node.children && !node.url) {
@@ -251,12 +256,16 @@ async function getBookmarkFolders() {
                         children: node.children.filter(child => child.url),
                         bookmarkCount: bookmarkCount
                     });
+                    console.log('Found folder:', node.title, 'with', bookmarkCount, 'bookmarks');
                 }
             }
+        } else {
+            console.log('No bookmark bar or children found');
         }
         
         // If no folders found, add some default suggestions
         if (folders.length === 0) {
+            console.log('No folders found, adding default suggestions');
             folders.push(
                 { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
                 { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
@@ -268,8 +277,10 @@ async function getBookmarkFolders() {
         // Sort folders by name
         folders.sort((a, b) => a.title.localeCompare(b.title));
         
+        console.log('Returning folders:', folders);
         return { success: true, folders: folders, browser: 'Chrome-based' };
     } catch (error) {
+        console.error('Error getting bookmark folders:', error);
         return { success: false, error: error.message, browser: 'Chrome-based' };
     }
 }

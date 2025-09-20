@@ -386,6 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error('Extension context invalidated');
                 }
                 
+                console.log('Requesting bookmark folders...');
                 const response = await chrome.runtime.sendMessage({ action: 'getBookmarkFolders' });
                 console.log('Folder response:', response);
                 
@@ -395,14 +396,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     renderFolders();
                 } else {
                     console.error('Failed to load folders:', response);
-                    // Show fallback with default suggestions
-                    folders = [
-                        { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
-                        { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
-                        { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
-                        { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
-                    ];
-                    renderFolders();
+                    // Try direct API call as fallback
+                    try {
+                        console.log('Trying direct bookmark API call...');
+                        const bookmarkTree = await chrome.bookmarks.getTree();
+                        console.log('Bookmark tree:', bookmarkTree);
+                        
+                        // Get bookmark bar (id: "1")
+                        const bookmarkBar = bookmarkTree[0]?.children?.find(node => node.id === "1");
+                        console.log('Bookmark bar:', bookmarkBar);
+                        
+                        if (bookmarkBar && bookmarkBar.children) {
+                            folders = [];
+                            for (const node of bookmarkBar.children) {
+                                if (node.children && !node.url) {
+                                    // This is a folder in bookmark bar
+                                    const bookmarkCount = node.children.filter(child => child.url).length;
+                                    folders.push({
+                                        id: node.id,
+                                        title: node.title,
+                                        children: node.children.filter(child => child.url),
+                                        bookmarkCount: bookmarkCount
+                                    });
+                                }
+                            }
+                            console.log('Direct API folders:', folders);
+                            renderFolders();
+                        } else {
+                            throw new Error('No bookmark bar found');
+                        }
+                    } catch (directError) {
+                        console.error('Direct API call failed:', directError);
+                        // Show fallback with default suggestions
+                        folders = [
+                            { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
+                            { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
+                            { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
+                            { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+                        ];
+                        renderFolders();
+                    }
                 }
             } catch (error) {
                 console.error('Error loading folders:', error);
@@ -419,6 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         function renderFolders() {
             folderList.innerHTML = '';
+            console.log('Rendering folders:', folders);
             
             if (folders.length === 0) {
                 // Show message when no folders
@@ -429,6 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div style="font-size: 24px; margin-bottom: 10px;">📁</div>
                         <div style="font-weight: 600; margin-bottom: 5px;">No folders found</div>
                         <div style="font-size: 12px;">Type a name above to create your first folder!</div>
+                        <div style="font-size: 10px; color: #999; margin-top: 10px;">Check browser console for debugging info</div>
                     </div>
                 `;
                 folderList.appendChild(noFoldersMsg);
