@@ -862,6 +862,9 @@
                     <span class="help-text">How to Import Bookmarks</span>
                     <div class="help-tooltip" id="helpTooltip">Click to see browser import guides</div>
                 </button>
+                <button class="example-btn" onclick="installExtension()" style="background: #28a745; border-color: #28a745; color: white;">
+                    📦 Install Extension
+                </button>
             </div>
         </div>
         
@@ -1392,6 +1395,13 @@ https://www.theverge.com`
                 <p style="margin-top: 15px; font-size: 14px; color: #666;">
                     💡 <strong>Pro tip:</strong> You can also use the download option for bulk import!
                 </p>
+                <div style="margin-top: 20px; padding: 15px; background: #1a3a1a; border: 1px solid #28a745; border-radius: 8px;">
+                    <h4 style="color: #28a745; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">🚀 Want Even Easier Bookmarking?</h4>
+                    <p style="color: #888; margin-bottom: 15px; font-size: 13px;">Install our browser extension for direct bookmark integration without any manual steps!</p>
+                    <button onclick="installExtension()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;">
+                        📦 Install Extension
+                    </button>
+                </div>
             `;
             
             showResult(bookmarkHTML, 'success');
@@ -1489,6 +1499,124 @@ https://www.theverge.com`
             
             // Add active class to clicked tab
             event.target.closest('.browser-tab').classList.add('active');
+        }
+        
+        // Extension installation function
+        function installExtension() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            let browser = '';
+            let installUrl = '';
+            
+            // Detect browser
+            if (userAgent.includes('chrome') && !userAgent.includes('edg')) {
+                browser = 'Chrome';
+                installUrl = 'chrome://extensions/';
+            } else if (userAgent.includes('edg')) {
+                browser = 'Edge';
+                installUrl = 'edge://extensions/';
+            } else if (userAgent.includes('firefox')) {
+                browser = 'Firefox';
+                installUrl = 'about:debugging';
+            } else {
+                browser = 'Chrome';
+                installUrl = 'chrome://extensions/';
+            }
+            
+            // Show installation modal
+            showInstallationModal(browser, installUrl);
+        }
+        
+        function showInstallationModal(browser, installUrl) {
+            const modalHTML = `
+                <div class="modal-overlay active" id="installModal" onclick="closeInstallModal()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <div class="modal-header">
+                            <h3>📦 Install Bookmark Converter Pro Extension</h3>
+                            <button class="close-btn" onclick="closeInstallModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                                <h4 style="color: #28a745; margin-bottom: 15px;">🚀 Currently in Testing Phase</h4>
+                                <p style="color: #888; margin-bottom: 15px;">Our extension is currently in testing and not yet available in the official store. You can install it manually for testing purposes.</p>
+                            </div>
+                            
+                            <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                                <h4 style="color: #fff; margin-bottom: 15px;">📋 Installation Steps for ${browser}:</h4>
+                                <div style="display: grid; gap: 15px;">
+                                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                        <div style="background: #4facfe; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
+                                        <div>
+                                            <strong style="color: #fff;">Download Extension Files</strong>
+                                            <p style="color: #888; margin: 5px 0;">Download the extension from our GitHub repository</p>
+                                            <a href="https://github.com/harish-govindasamy/bookmark-converter/tree/main/browser-extension" target="_blank" style="color: #4facfe; text-decoration: none;">📥 Download Extension Files</a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                        <div style="background: #4facfe; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
+                                        <div>
+                                            <strong style="color: #fff;">Open Extensions Page</strong>
+                                            <p style="color: #888; margin: 5px 0;">Click the button below to open your browser's extensions page</p>
+                                            <button onclick="openExtensionsPage('${installUrl}')" style="background: #4facfe; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                🔧 Open ${browser} Extensions
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                        <div style="background: #4facfe; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
+                                        <div>
+                                            <strong style="color: #fff;">Enable Developer Mode</strong>
+                                            <p style="color: #888; margin: 5px 0;">Toggle "Developer mode" in the top-right corner (Chrome/Edge) or click "This Firefox" (Firefox)</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                        <div style="background: #4facfe; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">4</div>
+                                        <div>
+                                            <strong style="color: #fff;">Load Extension</strong>
+                                            <p style="color: #888; margin: 5px 0;">Click "Load unpacked" (Chrome/Edge) or "Load Temporary Add-on" (Firefox) and select the extension folder</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                        <div style="background: #4facfe; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">5</div>
+                                        <div>
+                                            <strong style="color: #fff;">Pin Extension</strong>
+                                            <p style="color: #888; margin: 5px 0;">Pin the extension to your toolbar for easy access</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #3a1a1a; border: 1px solid #ff6b6b; border-radius: 8px; padding: 15px; margin-top: 20px;">
+                                <h4 style="color: #ff6b6b; margin-bottom: 10px;">⚠️ Important Notes:</h4>
+                                <ul style="color: #888; margin: 0; padding-left: 20px;">
+                                    <li>This extension is currently in testing phase</li>
+                                    <li>It will be available in official stores soon</li>
+                                    <li>Manual installation is required for now</li>
+                                    <li>All features are fully functional</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function openExtensionsPage(url) {
+            window.open(url, '_blank');
+        }
+        
+        function closeInstallModal() {
+            const modal = document.getElementById('installModal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            }
         }
     </script>
 </body>
