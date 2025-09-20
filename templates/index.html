@@ -1517,8 +1517,8 @@ https://www.theverge.com`
             if (userAgent.includes('firefox')) {
                 browser = 'Firefox';
                 installUrl = 'about:debugging';
-                extensionUrl = 'https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-firefox.zip';
-                extensionName = 'Firefox Extension (Manifest V2)';
+                extensionUrl = 'https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/firefox/bookmark-converter-pro-firefox-dev.zip';
+                extensionName = 'Firefox Extension (ZIP for Temporary Install)';
             } else if (userAgent.includes('chrome') || userAgent.includes('edg') || userAgent.includes('brave') || userAgent.includes('opera') || userAgent.includes('vivaldi')) {
                 // Chrome-based browsers
                 if (userAgent.includes('edg')) {
@@ -1571,6 +1571,23 @@ https://www.theverge.com`
                             
                             <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
                                 <h4 style="color: #fff; margin-bottom: 15px;">📋 Installation Steps for ${browser}:</h4>
+                                ${browser === 'Firefox' ? `
+                                <div style="background: #2a1a1a; border: 1px solid #ff6b6b; border-radius: 6px; padding: 15px; margin-bottom: 20px;">
+                                    <h5 style="color: #ff6b6b; margin-bottom: 10px;">🦊 Firefox Special Instructions:</h5>
+                                    <p style="color: #888; margin-bottom: 10px; font-size: 13px;">Firefox supports two installation methods:</p>
+                                    <div style="display: grid; gap: 10px;">
+                                        <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 4px; padding: 10px;">
+                                            <strong style="color: #28a745;">Method 1 (Recommended):</strong>
+                                            <p style="color: #888; margin: 5px 0; font-size: 12px;">Download ZIP → Extract → Load Temporary Add-on</p>
+                                        </div>
+                                        <div style="background: #1a1a3a; border: 1px solid #4facfe; border-radius: 4px; padding: 10px;">
+                                            <strong style="color: #4facfe;">Method 2 (Alternative):</strong>
+                                            <p style="color: #888; margin: 5px 0; font-size: 12px;">Download XPI → Install Add-on From File</p>
+                                            <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/firefox/bookmark-converter-pro.xpi" target="_blank" style="color: #4facfe; text-decoration: none; font-size: 12px;">📥 Download XPI File</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                ` : ''}
                                 <div style="display: grid; gap: 15px;">
                                     <div style="display: flex; align-items: flex-start; gap: 15px;">
                                         <div style="background: #4facfe; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
@@ -1604,7 +1621,7 @@ https://www.theverge.com`
                                         <div style="background: #4facfe; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">4</div>
                                         <div>
                                             <strong style="color: #fff;">Load Extension</strong>
-                                            <p style="color: #888; margin: 5px 0;">Extract the ZIP file, then load the extension using your browser's developer mode. Works on ALL browsers!</p>
+                                            <p style="color: #888; margin: 5px 0;">${browser === 'Firefox' ? 'Extract the ZIP file, then go to about:debugging → "Load Temporary Add-on" → Select manifest.json file' : 'Extract the ZIP file, then load the extension using your browser\'s developer mode'}</p>
                                         </div>
                                     </div>
                                     
