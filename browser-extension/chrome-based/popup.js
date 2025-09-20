@@ -372,6 +372,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Add debug button
+        const debugBtn = document.createElement('button');
+        debugBtn.id = 'debugFolders';
+        debugBtn.textContent = '🔍 Debug Folders';
+        debugBtn.style.cssText = `
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+            width: 100%;
+        `;
+        debugBtn.addEventListener('click', () => {
+            console.log('=== MANUAL DEBUG TRIGGERED ===');
+            loadFolders();
+        });
+        
+        const folderActions = document.querySelector('.folder-actions');
+        if (folderActions) {
+            folderActions.appendChild(debugBtn);
+        }
+        
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.folder-selector')) {
@@ -381,73 +406,92 @@ document.addEventListener('DOMContentLoaded', function() {
         
         async function loadFolders() {
             try {
-                // Check if extension context is valid
-                if (!chrome.runtime?.id) {
-                    throw new Error('Extension context invalidated');
-                }
+                console.log('=== FOLDER LOADING DEBUG START ===');
+                console.log('Extension context valid:', !!chrome.runtime?.id);
+                console.log('Chrome bookmarks API available:', !!chrome.bookmarks);
                 
-                console.log('Requesting bookmark folders...');
-                const response = await chrome.runtime.sendMessage({ action: 'getBookmarkFolders' });
-                console.log('Folder response:', response);
-                
-                if (response && response.success && response.folders) {
-                    folders = response.folders;
-                    console.log('Loaded folders:', folders);
-                    renderFolders();
-                } else {
-                    console.error('Failed to load folders:', response);
-                    // Try direct API call as fallback
-                    try {
-                        console.log('Trying direct bookmark API call...');
-                        const bookmarkTree = await chrome.bookmarks.getTree();
-                        console.log('Bookmark tree:', bookmarkTree);
-                        
-                        // Get bookmark bar (id: "1")
-                        const bookmarkBar = bookmarkTree[0]?.children?.find(node => node.id === "1");
-                        console.log('Bookmark bar:', bookmarkBar);
-                        
-                        if (bookmarkBar && bookmarkBar.children) {
-                            folders = [];
-                            for (const node of bookmarkBar.children) {
+                // First, try direct API call to see if it works at all
+                console.log('Testing direct Chrome bookmarks API...');
+                try {
+                    const testTree = await chrome.bookmarks.getTree();
+                    console.log('Direct API test successful! Bookmark tree:', testTree);
+                    
+                    // Get all possible bookmark locations
+                    const root = testTree[0];
+                    console.log('Root bookmark node:', root);
+                    console.log('Root children:', root?.children);
+                    
+                    // Check different possible bookmark bar IDs
+                    const possibleBookmarkBars = root?.children?.filter(node => 
+                        node.id === "1" || 
+                        node.title === "Bookmarks bar" || 
+                        node.title === "Bookmarks Toolbar" ||
+                        node.title === "Bookmark Bar"
+                    );
+                    console.log('Possible bookmark bars:', possibleBookmarkBars);
+                    
+                    // Try to find folders in any of these locations
+                    let allFolders = [];
+                    for (const bar of possibleBookmarkBars || []) {
+                        console.log('Checking bookmark bar:', bar.title, bar.id);
+                        if (bar.children) {
+                            for (const node of bar.children) {
                                 if (node.children && !node.url) {
-                                    // This is a folder in bookmark bar
                                     const bookmarkCount = node.children.filter(child => child.url).length;
-                                    folders.push({
+                                    allFolders.push({
                                         id: node.id,
                                         title: node.title,
                                         children: node.children.filter(child => child.url),
-                                        bookmarkCount: bookmarkCount
+                                        bookmarkCount: bookmarkCount,
+                                        location: bar.title
                                     });
+                                    console.log('Found folder:', node.title, 'in', bar.title, 'with', bookmarkCount, 'bookmarks');
                                 }
                             }
-                            console.log('Direct API folders:', folders);
-                            renderFolders();
-                        } else {
-                            throw new Error('No bookmark bar found');
                         }
-                    } catch (directError) {
-                        console.error('Direct API call failed:', directError);
-                        // Show fallback with default suggestions
-                        folders = [
-                            { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
-                            { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
-                            { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
-                            { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
-                        ];
-                        renderFolders();
                     }
+                    
+                    if (allFolders.length > 0) {
+                        folders = allFolders;
+                        console.log('Successfully loaded folders via direct API:', folders);
+                        renderFolders();
+                        return;
+                    }
+                    
+                } catch (directError) {
+                    console.error('Direct API test failed:', directError);
                 }
+                
+                // If direct API didn't work, try background script
+                console.log('Trying background script communication...');
+                const response = await chrome.runtime.sendMessage({ action: 'getBookmarkFolders' });
+                console.log('Background script response:', response);
+                
+                if (response && response.success && response.folders) {
+                    folders = response.folders;
+                    console.log('Loaded folders via background script:', folders);
+                    renderFolders();
+                } else {
+                    console.error('Background script failed:', response);
+                    throw new Error('Both direct API and background script failed');
+                }
+                
             } catch (error) {
-                console.error('Error loading folders:', error);
+                console.error('All folder loading methods failed:', error);
+                console.log('Using fallback suggestions...');
+                
                 // Show fallback with default suggestions
                 folders = [
                     { id: 'suggestion-1', title: 'My Bookmarks', children: [], bookmarkCount: 0, isSuggestion: true },
                     { id: 'suggestion-2', title: 'Work', children: [], bookmarkCount: 0, isSuggestion: true },
                     { id: 'suggestion-3', title: 'Personal', children: [], bookmarkCount: 0, isSuggestion: true },
-                    { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true }
+                    { id: 'suggestion-4', title: 'Learning', children: [], bookmarkCount: 0, isSuggestion: true },
+                    { id: 'suggestion-5', title: 'Favorites', children: [], bookmarkCount: 0, isSuggestion: true }
                 ];
                 renderFolders();
             }
+            
+            console.log('=== FOLDER LOADING DEBUG END ===');
         }
         
         function renderFolders() {
