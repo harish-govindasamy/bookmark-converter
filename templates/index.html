@@ -166,6 +166,99 @@
             margin-top: 15px;
         }
         
+        /* Quick Add Styles */
+        .quick-add-container {
+            margin-top: 20px;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .instructions ol {
+            margin: 10px 0 0 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+            color: #1976d2;
+        }
+        
+        .bookmark-list {
+            display: grid;
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        
+        .draggable-bookmark {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px 15px;
+            transition: all 0.2s ease;
+            cursor: grab;
+        }
+        
+        .draggable-bookmark:hover {
+            border-color: #4facfe;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .draggable-bookmark:active {
+            cursor: grabbing;
+        }
+        
+        .bookmark-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #333;
+            flex: 1;
+        }
+        
+        .bookmark-link:hover {
+            text-decoration: none;
+            color: #4facfe;
+        }
+        
+        .bookmark-icon {
+            font-size: 16px;
+        }
+        
+        .bookmark-title {
+            font-weight: 500;
+        }
+        
+        .copy-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
         .examples {
             margin-top: 30px;
             padding: 20px;
@@ -634,7 +727,7 @@
                 
                 <div class="action-buttons">
                     <button type="submit" class="btn btn-primary" id="convertBtn">📥 Download HTML File</button>
-                    <button type="button" class="btn btn-secondary" id="addToBrowserBtn">🚀 Add to Browser Directly</button>
+                    <button type="button" class="btn btn-secondary" id="quickAddBtn">⚡ Quick Add (Drag & Drop)</button>
                 </div>
             </form>
             
@@ -1036,10 +1129,10 @@ https://www.theverge.com`
             await processUrls('download');
         });
         
-        // Add to browser directly functionality
-        document.getElementById('addToBrowserBtn').addEventListener('click', async function(e) {
+        // Quick Add functionality
+        document.getElementById('quickAddBtn').addEventListener('click', async function(e) {
             e.preventDefault();
-            await processUrls('browser');
+            await processUrls('quickadd');
         });
         
         async function processUrls(mode) {
@@ -1055,25 +1148,29 @@ https://www.theverge.com`
             document.getElementById('loading').style.display = 'block';
             document.getElementById('result').style.display = 'none';
             document.getElementById('convertBtn').disabled = true;
-            document.getElementById('addToBrowserBtn').disabled = true;
+            document.getElementById('quickAddBtn').disabled = true;
             
             try {
-                const endpoint = mode === 'download' ? '/convert' : '/add-to-browser';
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        urls: urls,
-                        folder_name: folderName
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (mode === 'download') {
+                if (mode === 'quickadd') {
+                    // Quick Add - no server call needed
+                    const processedUrls = await processUrlsLocally(urls);
+                    showQuickAddResult(processedUrls, folderName);
+                } else {
+                    // Download mode
+                    const response = await fetch('/convert', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            urls: urls,
+                            folder_name: folderName
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
                         showResult(`
                             <h3>✅ Success!</h3>
                             <p>Converted <strong>${data.url_count}</strong> URLs to bookmarks</p>
@@ -1082,62 +1179,121 @@ https://www.theverge.com`
                                 Import this file into your browser using the tutorial below
                             </p>
                         `, 'success');
+                        
+                        // Update stats
+                        loadStats();
                     } else {
-                        // Direct browser integration
-                        await addBookmarksToBrowser(data.bookmarks, data.folder_name);
-                        showResult(`
-                            <h3>✅ Success!</h3>
-                            <p>Added <strong>${data.count}</strong> bookmarks directly to your browser!</p>
-                            <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                                Check your bookmarks bar - they should appear there now!
-                            </p>
-                        `, 'success');
+                        showResult(`<h3>❌ Error</h3><p>${data.error}</p>`, 'error');
                     }
-                    
-                    // Update stats
-                    loadStats();
-                } else {
-                    showResult(`<h3>❌ Error</h3><p>${data.error}</p>`, 'error');
                 }
             } catch (error) {
                 showResult(`<h3>❌ Error</h3><p>Something went wrong: ${error.message}</p>`, 'error');
             } finally {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('convertBtn').disabled = false;
-                document.getElementById('addToBrowserBtn').disabled = false;
+                document.getElementById('quickAddBtn').disabled = false;
             }
         }
         
-        async function addBookmarksToBrowser(bookmarks, folderName) {
-            // Create a folder first
-            try {
-                const folder = await chrome.bookmarks.create({
-                    title: folderName,
-                    parentId: '1' // Bookmarks bar
-                });
+        async function processUrlsLocally(urlsText) {
+            // Same processing logic as backend
+            const lines = urlsText.split('\n');
+            const processedUrls = [];
+            
+            for (const line of lines) {
+                let cleanLine = line.trim();
+                if (!cleanLine) continue;
                 
-                // Add each bookmark to the folder
-                for (const bookmark of bookmarks) {
-                    await chrome.bookmarks.create({
-                        parentId: folder.id,
-                        title: bookmark.title,
-                        url: bookmark.url
-                    });
+                // Remove common prefixes and formatting
+                cleanLine = cleanLine.replace(/^[→\-\*\•\d+\.\)]\s*/, ''); // Remove arrows, bullets, numbers
+                cleanLine = cleanLine.replace(/^[A-Za-z\s]+\(/, ''); // Remove text before parentheses
+                cleanLine = cleanLine.replace(/\)$/, ''); // Remove trailing parentheses
+                
+                // Add https:// if needed
+                if (cleanLine && !cleanLine.startsWith('http://') && !cleanLine.startsWith('https://')) {
+                    if (/^[a-zA-Z0-9][a-zA-Z0-9\-\.]*\.[a-zA-Z]{2,}/.test(cleanLine)) {
+                        cleanLine = 'https://' + cleanLine;
+                    }
                 }
-            } catch (error) {
-                // Fallback: try to add to bookmarks bar directly
-                try {
-                    for (const bookmark of bookmarks) {
-                        await chrome.bookmarks.create({
-                            parentId: '1', // Bookmarks bar
-                            title: bookmark.title,
-                            url: bookmark.url
+                
+                if (cleanLine && (cleanLine.startsWith('http://') || cleanLine.startsWith('https://'))) {
+                    // Extract title from URL
+                    try {
+                        const url = new URL(cleanLine);
+                        const title = url.hostname.replace('www.', '');
+                        processedUrls.push({
+                            title: title,
+                            url: cleanLine
+                        });
+                    } catch {
+                        processedUrls.push({
+                            title: cleanLine,
+                            url: cleanLine
                         });
                     }
-                } catch (fallbackError) {
-                    throw new Error('Unable to add bookmarks directly. Please use the download option instead.');
                 }
             }
+            
+            return processedUrls;
+        }
+        
+        function showQuickAddResult(bookmarks, folderName) {
+            let bookmarkHTML = `
+                <h3>⚡ Quick Add - Drag & Drop Bookmarks</h3>
+                <p>Created <strong>${bookmarks.length}</strong> draggable bookmarks for "${folderName}"</p>
+                <div class="quick-add-container">
+                    <div class="instructions">
+                        <strong>📋 Instructions:</strong>
+                        <ol>
+                            <li>Drag any bookmark below to your browser's bookmarks bar</li>
+                            <li>Or right-click → "Bookmark this link"</li>
+                            <li>Or Ctrl+D (Cmd+D on Mac) to bookmark</li>
+                        </ol>
+                    </div>
+                    <div class="bookmark-list">
+            `;
+            
+            bookmarks.forEach((bookmark, index) => {
+                bookmarkHTML += `
+                    <div class="draggable-bookmark" draggable="true" data-url="${bookmark.url}" data-title="${bookmark.title}">
+                        <a href="${bookmark.url}" target="_blank" class="bookmark-link">
+                            <span class="bookmark-icon">🔖</span>
+                            <span class="bookmark-title">${bookmark.title}</span>
+                        </a>
+                        <button class="copy-btn" onclick="copyBookmark('${bookmark.url}', '${bookmark.title}')" title="Copy bookmark link">📋</button>
+                    </div>
+                `;
+            });
+            
+            bookmarkHTML += `
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                    💡 <strong>Pro tip:</strong> You can also use the download option for bulk import!
+                </p>
+            `;
+            
+            showResult(bookmarkHTML, 'success');
+        }
+        
+        function copyBookmark(url, title) {
+            // Create a temporary textarea to copy the bookmark
+            const textarea = document.createElement('textarea');
+            textarea.value = `[${title}](${url})`;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            // Show feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅';
+            button.style.background = '#28a745';
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 1000);
         }
 
         function showResult(content, type) {
