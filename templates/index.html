@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bookmark Converter - Organize Your URLs</title>
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1176,11 +1178,20 @@
             <div class="stats" id="stats">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>📊 Live Usage Statistics</h3>
-                    <button onclick="loadStats()" style="background: #4facfe; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;" onmouseover="this.style.background='#00f2fe'" onmouseout="this.style.background='#4facfe'">
-                        🔄 Refresh
-                    </button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div id="connectionStatus" style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: #888;">
+                            <div id="statusIndicator" style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b;"></div>
+                            <span id="statusText">Connecting...</span>
+                        </div>
+                        <button onclick="loadStats()" style="background: #4facfe; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;" onmouseover="this.style.background='#00f2fe'" onmouseout="this.style.background='#4facfe'">
+                            🔄 Refresh
+                        </button>
+                    </div>
                 </div>
-                <p id="statsContent">Loading...</p>
+                <div id="statsContent">Loading...</div>
+                <div id="detailedStats" style="margin-top: 20px; display: none;">
+                    <!-- Detailed statistics will be populated here -->
+                </div>
             </div>
         </div>
     </div>
@@ -1523,50 +1534,63 @@ https://www.theverge.com`
             resultDiv.style.display = 'block';
         }
 
+        // WebSocket connection for real-time updates
+        let socket = null;
+        let isConnected = false;
+
+        function initWebSocket() {
+            try {
+                socket = io();
+                
+                socket.on('connect', function() {
+                    isConnected = true;
+                    updateConnectionStatus(true);
+                    console.log('Connected to live statistics');
+                });
+                
+                socket.on('disconnect', function() {
+                    isConnected = false;
+                    updateConnectionStatus(false);
+                    console.log('Disconnected from live statistics');
+                });
+                
+                socket.on('stats_update', function(data) {
+                    console.log('Received live stats update:', data);
+                    updateStatsDisplay(data);
+                });
+                
+                socket.on('connected', function(data) {
+                    console.log('Socket connected:', data.message);
+                });
+                
+                socket.on('error', function(data) {
+                    console.error('Socket error:', data.message);
+                });
+                
+            } catch (error) {
+                console.error('Failed to initialize WebSocket:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const indicator = document.getElementById('statusIndicator');
+            const text = document.getElementById('statusText');
+            
+            if (connected) {
+                indicator.style.background = '#28a745';
+                text.textContent = 'Live';
+            } else {
+                indicator.style.background = '#ff6b6b';
+                text.textContent = 'Offline';
+            }
+        }
+
         async function loadStats() {
             try {
                 const response = await fetch('/analytics');
                 const data = await response.json();
-                
-                // Format numbers with commas
-                const formatNumber = (num) => num.toLocaleString();
-                
-                // Get current time for live indicator
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString();
-                
-                document.getElementById('statsContent').innerHTML = `
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
-                            <div style="color: #4facfe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_conversions)}</div>
-                            <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Total Conversions</div>
-                        </div>
-                        <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
-                            <div style="color: #00f2fe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_urls)}</div>
-                            <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">URLs Processed</div>
-                        </div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
-                            <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_conversions)}</div>
-                            <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Conversions</div>
-                        </div>
-                        <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
-                            <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_urls)}</div>
-                            <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's URLs</div>
-                        </div>
-                    </div>
-                    <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 6px; padding: 10px; margin-top: 10px;">
-                        <div style="color: #28a745; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                            🔴 LIVE • Last updated: ${timeStr}
-                        </div>
-                    </div>
-                `;
-                
-                // Show recent activity if available
-                if (data.recent_activity && data.recent_activity.length > 0) {
-                    showRecentActivity(data.recent_activity);
-                }
+                updateStatsDisplay(data);
                 
             } catch (error) {
                 document.getElementById('statsContent').innerHTML = `
@@ -1577,6 +1601,120 @@ https://www.theverge.com`
                     </div>
                 `;
             }
+        }
+
+        function updateStatsDisplay(data) {
+            // Format numbers with commas
+            const formatNumber = (num) => num.toLocaleString();
+            
+            // Get current time for live indicator
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            
+            // Main statistics display
+            document.getElementById('statsContent').innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #4facfe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_conversions)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Total Conversions</div>
+                    </div>
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #00f2fe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_urls)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">URLs Processed</div>
+                    </div>
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${formatNumber(data.unique_users)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Unique Users</div>
+                    </div>
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #ff6b6b; font-size: 18px; font-weight: bold;">${data.success_rate}%</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Success Rate</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_conversions)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Conversions</div>
+                    </div>
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_urls)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's URLs</div>
+                    </div>
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_unique_users)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Users</div>
+                    </div>
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${data.avg_processing_time}ms</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Avg Processing</div>
+                    </div>
+                </div>
+                <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                    <div style="color: #28a745; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        ${isConnected ? '🔴 LIVE' : '⚪ OFFLINE'} • Last updated: ${timeStr}
+                    </div>
+                </div>
+            `;
+            
+            // Show detailed statistics
+            showDetailedStats(data);
+            
+            // Show recent activity if available
+            if (data.recent_activity && data.recent_activity.length > 0) {
+                showRecentActivity(data.recent_activity);
+            }
+        }
+
+        function showDetailedStats(data) {
+            const detailedDiv = document.getElementById('detailedStats');
+            
+            let detailedHTML = `
+                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                    <h4 style="color: #fff; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        📊 Detailed Analytics
+                    </h4>
+            `;
+            
+            // Conversion breakdown
+            if (data.conversion_breakdown && data.conversion_breakdown.length > 0) {
+                detailedHTML += `
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="color: #4facfe; margin-bottom: 10px; font-size: 13px;">Conversion Types</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                `;
+                data.conversion_breakdown.forEach(breakdown => {
+                    const icon = breakdown.type === 'quickadd' ? '⚡' : '📥';
+                    detailedHTML += `
+                        <div style="background: #2a2a2a; padding: 10px; border-radius: 6px; border: 1px solid #444;">
+                            <div style="color: #fff; font-size: 14px; font-weight: bold;">${icon} ${breakdown.count}</div>
+                            <div style="color: #888; font-size: 11px;">${breakdown.type}</div>
+                        </div>
+                    `;
+                });
+                detailedHTML += `</div></div>`;
+            }
+            
+            // Top folders
+            if (data.top_folders && data.top_folders.length > 0) {
+                detailedHTML += `
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="color: #4facfe; margin-bottom: 10px; font-size: 13px;">Popular Folders</h5>
+                        <div style="display: grid; gap: 8px;">
+                `;
+                data.top_folders.slice(0, 5).forEach(folder => {
+                    detailedHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #2a2a2a; border-radius: 6px; border: 1px solid #444;">
+                            <span style="color: #fff; font-size: 13px;">📁 ${folder.name}</span>
+                            <span style="color: #888; font-size: 12px;">${folder.count} conversions</span>
+                        </div>
+                    `;
+                });
+                detailedHTML += `</div></div>`;
+            }
+            
+            detailedHTML += `</div>`;
+            detailedDiv.innerHTML = detailedHTML;
+            detailedDiv.style.display = 'block';
         }
         
         function showRecentActivity(activities) {
@@ -1622,10 +1760,13 @@ https://www.theverge.com`
             activitySection.innerHTML = activityHTML;
         }
 
+        // Initialize WebSocket connection
+        initWebSocket();
+        
         // Load stats on page load
         loadStats();
         
-        // Auto-refresh stats every 30 seconds for live updates
+        // Auto-refresh stats every 30 seconds for live updates (fallback)
         setInterval(loadStats, 30000);
         
         // Floating Social Sidebar functionality
