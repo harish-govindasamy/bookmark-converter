@@ -522,11 +522,31 @@
             border-color: #adb5bd;
         }
         
+        .quick-examples-section {
+            margin-top: 40px;
+        }
+        
         .examples {
             background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 12px;
             padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .extension-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
         }
         
         .examples h3 {
@@ -994,8 +1014,22 @@
                 gap: 40px;
             }
             
-            .form-section, .examples {
+            .form-section {
                 padding: 30px 20px;
+            }
+            
+            .examples {
+                padding: 30px 20px;
+            }
+            
+            .examples-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .extension-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
             
             .action-buttons {
@@ -1112,26 +1146,31 @@
                 </form>
             </div>
             
+        </div>
+        
+        <!-- Quick Examples Section -->
+        <div class="quick-examples-section">
             <div class="examples">
                 <h3>Quick Examples</h3>
-                <button class="example-btn" onclick="loadExample('job-sites')">Clean URLs</button>
-                <button class="example-btn" onclick="loadExample('messy-text')">✨ Messy Text (Auto-Clean)</button>
-                <button class="example-btn" onclick="loadExample('tech-sites')">Tech Resources</button>
-                <button class="example-btn" onclick="loadExample('news-sites')">News Sites</button>
+                <div class="examples-grid">
+                    <button class="example-btn" onclick="loadExample('job-sites')">Clean URLs</button>
+                    <button class="example-btn" onclick="loadExample('messy-text')">✨ Messy Text (Auto-Clean)</button>
+                    <button class="example-btn" onclick="loadExample('tech-sites')">Tech Resources</button>
+                    <button class="example-btn" onclick="loadExample('news-sites')">News Sites</button>
+                </div>
                 <button class="help-btn" onclick="openTutorial()" onmouseover="showHelpTooltip()" onmouseout="hideHelpTooltip()">
                     <span class="help-icon">❓</span>
                     <span class="help-text">How to Import Bookmarks</span>
                     <div class="help-tooltip" id="helpTooltip">Click to see browser import guides</div>
                 </button>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <button class="example-btn" onclick="installExtension()" style="background: #28a745; border-color: #28a745; color: white; font-size: 12px;">
-                📦 Auto-Detect
-            </button>
-            <button class="example-btn" onclick="showAllExtensions()" style="background: #4facfe; border-color: #4facfe; color: white; font-size: 12px;">
-                🌐 All Extensions
-            </button>
-        </div>
-        
+                <div class="extension-buttons">
+                    <button class="example-btn" onclick="installExtension()" style="background: #28a745; border-color: #28a745; color: white; font-size: 12px;">
+                        📦 Auto-Detect
+                    </button>
+                    <button class="example-btn" onclick="showAllExtensions()" style="background: #4facfe; border-color: #4facfe; color: white; font-size: 12px;">
+                        🌐 All Extensions
+                    </button>
+                </div>
             </div>
         </div>
         
