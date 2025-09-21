@@ -35,7 +35,9 @@ browser.commands.onCommand.addListener((command) => {
 
 // Handle messages from content scripts and popup
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Message received:', request.action);
+    console.log('📨 Message received:', request.action, 'from:', sender.tab?.url || 'popup');
+    console.log('📨 Full request:', request);
+    console.log('📨 Sender:', sender);
     
     if (request.action === 'ping') {
         // Respond to web app ping to detect extension

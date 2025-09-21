@@ -1,5 +1,9 @@
 // Content script for Bookmark Converter Pro Extension (Firefox)
 
+console.log('🚀 Bookmark Converter Pro Firefox content script loaded');
+console.log('Content script running on:', window.location.href);
+console.log('Browser runtime available:', typeof browser !== 'undefined' && browser.runtime);
+
 // Inject bookmark button into pages
 function injectBookmarkButton() {
     // Check if button already exists
@@ -444,26 +448,42 @@ window.addEventListener('message', function(event) {
         const { action, data } = event.data;
         
         if (action === 'importBookmarks' || action === 'exportBookmarks') {
-            // Forward to background script
-            browser.runtime.sendMessage({
-                action: action,
-                data: data
-            }).then((response) => {
-                // Send response back to web app
-                window.postMessage({
-                    type: 'BOOKMARK_CONVERTER_RESPONSE',
-                    success: response ? response.success : false,
-                    message: response ? response.message : 'Extension communication failed',
-                    data: response ? response.data : null
-                }, '*');
-            }).catch((error) => {
-                // Send error response back to web app
+            console.log('Forwarding to background script:', { action, data });
+            
+            // Check if we have access to browser.runtime
+            if (typeof browser !== 'undefined' && browser.runtime && browser.runtime.sendMessage) {
+                console.log('Sending message to background script...');
+                // Forward to background script
+                browser.runtime.sendMessage({
+                    action: action,
+                    data: data
+                }).then((response) => {
+                    console.log('Background script response received:', response);
+                    console.log('Sending success response to web app');
+                    // Send response back to web app
+                    window.postMessage({
+                        type: 'BOOKMARK_CONVERTER_RESPONSE',
+                        success: response ? response.success : false,
+                        message: response ? response.message : 'Extension communication failed',
+                        data: response ? response.data : null
+                    }, '*');
+                }).catch((error) => {
+                    console.error('Extension communication error:', error);
+                    // Send error response back to web app
+                    window.postMessage({
+                        type: 'BOOKMARK_CONVERTER_RESPONSE',
+                        success: false,
+                        message: 'Extension communication failed: ' + error.message
+                    }, '*');
+                });
+            } else {
+                console.error('browser.runtime not available');
                 window.postMessage({
                     type: 'BOOKMARK_CONVERTER_RESPONSE',
                     success: false,
-                    message: 'Extension communication failed: ' + error.message
+                    message: 'Extension runtime not available'
                 }, '*');
-            });
+            }
         }
     }
 });

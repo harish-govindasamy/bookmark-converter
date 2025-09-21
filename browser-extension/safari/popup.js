@@ -445,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Web App Communication Functions
     async function importBookmarksFromWebApp(data) {
+        console.log('Safari: Import bookmarks from web app:', data);
         try {
             if (!data || !data.urls) {
                 throw new Error('No URLs provided for import');
@@ -452,6 +453,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const urls = data.urls.split('\n').filter(url => url.trim());
             const folderName = data.folderName || 'Imported Bookmarks';
+            
+            console.log('Safari: Processing URLs:', urls.length);
             
             // For Safari, we can only add URLs to the textarea since direct bookmark API is limited
             let successCount = 0;
@@ -464,11 +467,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
+            console.log('Safari: Import completed:', successCount);
+            
             return {
                 success: true,
                 message: `Successfully imported ${successCount} URLs to textarea (Safari limitation: direct bookmark API not available)`
             };
         } catch (error) {
+            console.error('Safari: Import error:', error);
             return {
                 success: false,
                 error: error.message
@@ -477,9 +483,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function exportBookmarksToWebApp(data) {
+        console.log('Safari: Export bookmarks to web app:', data);
         try {
             // For Safari, we can only export what's in the textarea
             const urls = urlsTextarea.value.split('\n').filter(url => url.trim());
+            
+            console.log('Safari: Exporting URLs:', urls.length);
             
             return {
                 success: true,
@@ -490,6 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
         } catch (error) {
+            console.error('Safari: Export error:', error);
             return {
                 success: false,
                 error: error.message
