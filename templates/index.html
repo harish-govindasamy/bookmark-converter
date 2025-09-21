@@ -2561,6 +2561,14 @@ https://www.theverge.com`
                     }).catch(() => {
                         resolve(false);
                     });
+                } else if (typeof safari !== 'undefined' && safari.extension) {
+                    // Safari extension detection
+                    try {
+                        safari.extension.dispatchMessage('webAppMessage', {action: 'ping'});
+                        resolve(true);
+                    } catch (error) {
+                        resolve(false);
+                    }
                 } else {
                     // Method 3: Check for extension-specific global variables
                     setTimeout(() => {
@@ -2612,6 +2620,30 @@ https://www.theverge.com`
                 }).catch((error) => {
                     alert('❌ Error communicating with extension: ' + error.message);
                 });
+            } else if (typeof safari !== 'undefined' && safari.extension) {
+                // Safari extension communication
+                try {
+                    safari.extension.dispatchMessage('webAppMessage', message);
+                    
+                    // Listen for response
+                    safari.extension.addEventListener('message', function(event) {
+                        if (event.name === 'webAppResponse') {
+                            const response = event.message;
+                            if (response && response.success) {
+                                alert('✅ ' + response.message);
+                                
+                                // If exporting, update the textarea with the exported URLs
+                                if (action === 'exportBookmarks' && response.data && response.data.urls) {
+                                    document.getElementById('urls').value = response.data.urls;
+                                }
+                            } else {
+                                alert('❌ Error: ' + (response ? response.message : 'Extension communication failed'));
+                            }
+                        }
+                    });
+                } catch (error) {
+                    alert('❌ Error communicating with Safari extension: ' + error.message);
+                }
             } else {
                 alert('❌ Extension communication not available');
             }

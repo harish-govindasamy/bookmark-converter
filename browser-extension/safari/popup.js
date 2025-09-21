@@ -442,4 +442,88 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusEl = document.getElementById('status');
         statusEl.style.display = 'none';
     }
+
+    // Web App Communication Functions
+    async function importBookmarksFromWebApp(data) {
+        try {
+            if (!data || !data.urls) {
+                throw new Error('No URLs provided for import');
+            }
+            
+            const urls = data.urls.split('\n').filter(url => url.trim());
+            const folderName = data.folderName || 'Imported Bookmarks';
+            
+            // For Safari, we can only add URLs to the textarea since direct bookmark API is limited
+            let successCount = 0;
+            for (const url of urls) {
+                const cleanUrl = url.trim();
+                if (cleanUrl) {
+                    const currentUrls = urlsTextarea.value;
+                    urlsTextarea.value = currentUrls + (currentUrls ? '\n' : '') + cleanUrl;
+                    successCount++;
+                }
+            }
+            
+            return {
+                success: true,
+                message: `Successfully imported ${successCount} URLs to textarea (Safari limitation: direct bookmark API not available)`
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    async function exportBookmarksToWebApp(data) {
+        try {
+            // For Safari, we can only export what's in the textarea
+            const urls = urlsTextarea.value.split('\n').filter(url => url.trim());
+            
+            return {
+                success: true,
+                message: `Exported ${urls.length} URLs from textarea`,
+                data: {
+                    urls: urls.join('\n'),
+                    count: urls.length
+                }
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // Handle messages from web app (Safari extension communication)
+    if (typeof safari !== 'undefined' && safari.extension) {
+        safari.extension.addEventListener('message', function(event) {
+            if (event.name === 'webAppMessage') {
+                const request = event.message;
+                
+                switch (request.action) {
+                    case 'ping':
+                        event.target.page.dispatchMessage('webAppResponse', {
+                            success: true,
+                            message: 'Safari Extension detected'
+                        });
+                        break;
+                        
+                    case 'importBookmarks':
+                        importBookmarksFromWebApp(request.data).then(result => {
+                            event.target.page.dispatchMessage('webAppResponse', result);
+                        });
+                        break;
+                        
+                    case 'exportBookmarks':
+                        exportBookmarksToWebApp(request.data).then(result => {
+                            event.target.page.dispatchMessage('webAppResponse', result);
+                        });
+                        break;
+                }
+            }
+        });
+    }
 });

@@ -37,6 +37,26 @@ browser.commands.onCommand.addListener((command) => {
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('Message received:', request.action);
     
+    if (request.action === 'ping') {
+        // Respond to web app ping to detect extension
+        sendResponse({success: true, message: 'Extension detected'});
+        return true;
+    }
+    
+    if (request.action === 'importBookmarks') {
+        importBookmarksFromWebApp(request.data)
+            .then(result => sendResponse(result))
+            .catch(error => sendResponse({success: false, error: error.message}));
+        return true;
+    }
+    
+    if (request.action === 'exportBookmarks') {
+        exportBookmarksToWebApp(request.data)
+            .then(result => sendResponse(result))
+            .catch(error => sendResponse({success: false, error: error.message}));
+        return true;
+    }
+    
     if (request.action === 'bookmarkCurrentPage') {
         bookmarkCurrentPage(sender.tab)
             .then(result => sendResponse(result))
@@ -428,3 +448,106 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
         console.error('Context menu action failed:', error);
     }
 });
+
+// Web App Communication Functions
+async function importBookmarksFromWebApp(data) {
+    try {
+        if (!data || !data.urls) {
+            throw new Error('No URLs provided for import');
+        }
+        
+        const urls = data.urls.split('\n').filter(url => url.trim());
+        const folderName = data.folderName || 'Imported Bookmarks';
+        
+        // Get bookmark tree to find the right parent
+        const bookmarkTree = await browser.bookmarks.getTree();
+        const bookmarkBar = bookmarkTree[0]?.children?.find(node => 
+            node.title === 'Bookmarks Toolbar' || node.id === 'toolbar_____'
+        );
+        const toolbarId = bookmarkBar ? bookmarkBar.id : 'toolbar_____';
+        
+        // Create folder if it doesn't exist
+        let folderId = toolbarId;
+        try {
+            const folders = await browser.bookmarks.getChildren(toolbarId);
+            const existingFolder = folders.find(folder => folder.title === folderName);
+            
+            if (existingFolder) {
+                folderId = existingFolder.id;
+            } else {
+                const newFolder = await browser.bookmarks.create({
+                    parentId: toolbarId,
+                    title: folderName
+                });
+                folderId = newFolder.id;
+            }
+        } catch (error) {
+            console.log('Using default folder:', error);
+        }
+        
+        // Add bookmarks
+        let successCount = 0;
+        for (const url of urls) {
+            const cleanUrl = url.trim();
+            if (cleanUrl) {
+                try {
+                    await browser.bookmarks.create({
+                        parentId: folderId,
+                        title: cleanUrl,
+                        url: cleanUrl,
+                        index: 0 // Add at the beginning
+                    });
+                    successCount++;
+                } catch (error) {
+                    console.error('Failed to bookmark:', cleanUrl, error);
+                }
+            }
+        }
+        
+        return {
+            success: true,
+            message: `Successfully imported ${successCount} bookmarks to "${folderName}" folder`
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+async function exportBookmarksToWebApp(data) {
+    try {
+        const bookmarks = await browser.bookmarks.getTree();
+        const urls = [];
+        
+        // Extract URLs from bookmark tree
+        const extractUrls = (nodes) => {
+            for (const node of nodes) {
+                if (node.url) {
+                    urls.push(node.url);
+                }
+                if (node.children) {
+                    extractUrls(node.children);
+                }
+            }
+        };
+        
+        extractUrls(bookmarks);
+        
+        // Update web app with exported URLs
+        return {
+            success: true,
+            message: `Exported ${urls.length} bookmarks`,
+            data: {
+                urls: urls.join('\n'),
+                count: urls.length
+            }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}

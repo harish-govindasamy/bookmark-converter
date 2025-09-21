@@ -439,3 +439,6 @@ window.bookmarkConverter = {
         domain: window.location.hostname
     })
 };
+
+// Mark extension as available for web app detection
+window.bookmarkConverterExtension = true;
