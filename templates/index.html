@@ -576,6 +576,102 @@
             border-color: #3d8bfe;
         }
         
+        /* Browser Import/Export Modal Styles */
+        .browser-detection {
+            text-align: center;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .detected-browser {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .browser-icon {
+            font-size: 2em;
+        }
+        
+        .browser-info h4 {
+            margin: 0 0 5px 0;
+            color: #4facfe;
+        }
+        
+        .browser-info p {
+            margin: 0;
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .import-export-options {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .option-section h4 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .import-methods, .export-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .method-btn {
+            background: #0a0a0a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .method-btn:hover {
+            background: #1a1a1a;
+            border-color: #4facfe;
+        }
+        
+        .format-options {
+            margin-top: 20px;
+        }
+        
+        .format-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .format-btn {
+            background: #0a0a0a;
+            border: 1px solid #444;
+            color: #888;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .format-btn.active {
+            background: #4facfe;
+            border-color: #4facfe;
+            color: white;
+        }
+        
+        .format-btn:hover {
+            border-color: #4facfe;
+        }
+        
         .examples h3 {
             margin-bottom: 30px;
             color: #fff;
@@ -1170,10 +1266,10 @@
                 <button class="example-btn" onclick="loadExample('messy-text')">✨ Messy Text (Auto-Clean)</button>
                 <button class="example-btn" onclick="loadExample('tech-sites')">Tech Resources</button>
                 <button class="example-btn" onclick="loadExample('news-sites')">News Sites</button>
-                <button class="help-btn" onclick="openTutorial()" onmouseover="showHelpTooltip()" onmouseout="hideHelpTooltip()">
-                    <span class="help-icon">❓</span>
-                    <span class="help-text">How to Import Bookmarks</span>
-                    <div class="help-tooltip" id="helpTooltip">Click to see browser import guides</div>
+                <button class="help-btn" onclick="openBrowserImportExport()" onmouseover="showHelpTooltip()" onmouseout="hideHelpTooltip()">
+                    <span class="help-icon">🌐</span>
+                    <span class="help-text">Browser Import/Export</span>
+                    <div class="help-tooltip" id="helpTooltip">Click for browser-specific import/export tools</div>
                 </button>
                 
                 <!-- Extension Buttons Section -->
@@ -1556,6 +1652,62 @@
                 <div style="text-align: center; padding: 40px; color: #888;">
                     <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
                     <div>Loading detailed statistics...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Browser Import/Export Modal -->
+    <div class="modal-overlay" id="browserImportExportModal" onclick="closeBrowserImportExport()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>🌐 Browser Import/Export Tools</h3>
+                <button class="close-btn" onclick="closeBrowserImportExport()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="browser-detection">
+                    <div class="detected-browser" id="detectedBrowser">
+                        <div class="browser-icon" id="browserIcon">🔍</div>
+                        <div class="browser-info">
+                            <h4 id="browserName">Detecting Browser...</h4>
+                            <p id="browserVersion">Please wait while we detect your browser</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="import-export-options" id="importExportOptions" style="display: none;">
+                    <div class="option-section">
+                        <h4>📥 Import Bookmarks</h4>
+                        <div class="import-methods">
+                            <button class="method-btn" onclick="importFromFile()">
+                                📁 Import from File
+                            </button>
+                            <button class="method-btn" onclick="importFromBrowser()" id="directImportBtn" style="display: none;">
+                                🔗 Direct Browser Import
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="option-section">
+                        <h4>📤 Export Bookmarks</h4>
+                        <div class="export-methods">
+                            <button class="method-btn" onclick="exportToFile()">
+                                💾 Download File
+                            </button>
+                            <button class="method-btn" onclick="exportToBrowser()" id="directExportBtn" style="display: none;">
+                                🔗 Direct Browser Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="format-options">
+                        <h4>📋 Supported Formats</h4>
+                        <div class="format-buttons">
+                            <button class="format-btn active" data-format="html">HTML</button>
+                            <button class="format-btn" data-format="json">JSON</button>
+                            <button class="format-btn" data-format="csv">CSV</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
