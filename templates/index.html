@@ -750,23 +750,6 @@
                 font-size: 1em;
             }
             
-            /* Mobile header social links */
-            .header > div:first-child {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 20px;
-            }
-            
-            .header-social {
-                max-width: 100% !important;
-                justify-content: center;
-            }
-            
-            .header-social a {
-                font-size: 11px !important;
-                padding: 6px 10px !important;
-            }
             
             .content {
                 grid-template-columns: 1fr;
@@ -841,30 +824,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                <div>
-                    <h1>🔖 Bookmark Converter</h1>
-                    <p>Transform your URLs into organized browser bookmarks</p>
-                </div>
-                <div class="header-social" style="display: flex; gap: 8px; flex-wrap: wrap; max-width: 200px;">
-                    <a href="https://github.com/harish-govindasamy" target="_blank" style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #24292e; border: 1px solid #444; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 12px; font-weight: 500;" onmouseover="this.style.background='#2d3339'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#24292e'; this.style.transform='translateY(0)'">
-                        <span style="font-size: 16px;">🐙</span>
-                        <span>GitHub</span>
-                    </a>
-                    <a href="https://linkedin.com/in/itsharishg" target="_blank" style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #0077b5; border: 1px solid #005885; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 12px; font-weight: 500;" onmouseover="this.style.background='#005885'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0077b5'; this.style.transform='translateY(0)'">
-                        <span style="font-size: 16px;">💼</span>
-                        <span>LinkedIn</span>
-                    </a>
-                    <a href="https://x.com/harish_g24" target="_blank" style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #000000; border: 1px solid #333; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 12px; font-weight: 500;" onmouseover="this.style.background='#1a1a1a'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#000000'; this.style.transform='translateY(0)'">
-                        <span style="font-size: 16px;">🐦</span>
-                        <span>X.com</span>
-                    </a>
-                    <a href="https://instagram.com/harishcodes" target="_blank" style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border: 1px solid #bc1888; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 12px; font-weight: 500;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <span style="font-size: 16px;">📸</span>
-                        <span>Instagram</span>
-                    </a>
-                </div>
-            </div>
+            <h1>🔖 Bookmark Converter</h1>
+            <p>Transform your URLs into organized browser bookmarks</p>
             <div class="feature-highlight">
                 <span class="feature-badge">✨ NEW</span>
                 <span>Smart URL Processing - Automatically cleans messy text and adds https://</span>
@@ -909,6 +870,56 @@
             <button class="example-btn" onclick="showAllExtensions()" style="background: #4facfe; border-color: #4facfe; color: white; font-size: 12px;">
                 🌐 All Extensions
             </button>
+        </div>
+        
+        <!-- Professional Social Media Section -->
+        <div style="margin-top: 30px; padding: 20px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px;">
+            <h4 style="color: #fff; margin-bottom: 15px; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">
+                🚀 Follow & Support
+            </h4>
+            <p style="color: #888; text-align: center; margin-bottom: 20px; font-size: 12px; line-height: 1.4;">
+                Stay updated with new features and support the project!
+            </p>
+            
+            <div style="display: grid; gap: 10px;">
+                <a href="https://github.com/harish-govindasamy" target="_blank" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #24292e; border: 1px solid #444; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 13px; font-weight: 500;" onmouseover="this.style.background='#2d3339'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#24292e'; this.style.transform='translateY(0)'">
+                    <span style="font-size: 18px;">🐙</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">GitHub</div>
+                        <div style="font-size: 11px; color: #888;">@harish-govindasamy</div>
+                    </div>
+                </a>
+                
+                <a href="https://linkedin.com/in/itsharishg" target="_blank" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #0077b5; border: 1px solid #005885; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 13px; font-weight: 500;" onmouseover="this.style.background='#005885'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0077b5'; this.style.transform='translateY(0)'">
+                    <span style="font-size: 18px;">💼</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">LinkedIn</div>
+                        <div style="font-size: 11px; color: #b3d9ff;">Professional Network</div>
+                    </div>
+                </a>
+                
+                <a href="https://x.com/harish_g24" target="_blank" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #000000; border: 1px solid #333; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 13px; font-weight: 500;" onmouseover="this.style.background='#1a1a1a'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#000000'; this.style.transform='translateY(0)'">
+                    <span style="font-size: 18px;">🐦</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">X.com</div>
+                        <div style="font-size: 11px; color: #888;">@harish_g24</div>
+                    </div>
+                </a>
+                
+                <a href="https://instagram.com/harishcodes" target="_blank" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border: 1px solid #bc1888; border-radius: 6px; text-decoration: none; color: #fff; transition: all 0.2s ease; font-size: 13px; font-weight: 500;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <span style="font-size: 18px;">📸</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">Instagram</div>
+                        <div style="font-size: 11px; color: #ffb3d9;">@harishcodes</div>
+                    </div>
+                </a>
+            </div>
+            
+            <div style="background: #2a4a2a; border: 1px solid #28a745; border-radius: 6px; padding: 12px; margin-top: 15px; text-align: center;">
+                <p style="color: #28a745; margin: 0; font-size: 11px; font-weight: 600;">
+                    ⭐ Star on GitHub to show support!
+                </p>
+            </div>
         </div>
             </div>
         </div>
