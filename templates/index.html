@@ -2253,6 +2253,262 @@ https://www.theverge.com`
         
         // Auto-refresh stats every 30 seconds for live updates (fallback)
         setInterval(loadStats, 30000);
+
+        // Browser Import/Export Functions
+        function openBrowserImportExport() {
+            document.getElementById('browserImportExportModal').style.display = 'flex';
+            detectBrowser();
+        }
+
+        function closeBrowserImportExport() {
+            document.getElementById('browserImportExportModal').style.display = 'none';
+        }
+
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browserName = 'Unknown Browser';
+            let browserIcon = '🌐';
+            let browserVersion = '';
+            let supportsDirectImport = false;
+            let supportsDirectExport = false;
+
+            if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+                browserName = 'Google Chrome';
+                browserIcon = '🟢';
+                browserVersion = 'Chromium-based';
+                supportsDirectImport = true;
+                supportsDirectExport = true;
+            } else if (userAgent.includes('Edg')) {
+                browserName = 'Microsoft Edge';
+                browserIcon = '🔵';
+                browserVersion = 'Chromium-based';
+                supportsDirectImport = true;
+                supportsDirectExport = true;
+            } else if (userAgent.includes('Firefox')) {
+                browserName = 'Mozilla Firefox';
+                browserIcon = '🦊';
+                browserVersion = 'Gecko-based';
+                supportsDirectImport = true;
+                supportsDirectExport = true;
+            } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                browserName = 'Safari';
+                browserIcon = '🧭';
+                browserVersion = 'WebKit-based';
+                supportsDirectImport = false;
+                supportsDirectExport = false;
+            } else if (userAgent.includes('Brave')) {
+                browserName = 'Brave Browser';
+                browserIcon = '🦁';
+                browserVersion = 'Chromium-based';
+                supportsDirectImport = true;
+                supportsDirectExport = true;
+            } else if (userAgent.includes('Vivaldi')) {
+                browserName = 'Vivaldi';
+                browserIcon = '🎭';
+                browserVersion = 'Chromium-based';
+                supportsDirectImport = true;
+                supportsDirectExport = true;
+            }
+
+            // Update UI
+            document.getElementById('browserIcon').textContent = browserIcon;
+            document.getElementById('browserName').textContent = browserName;
+            document.getElementById('browserVersion').textContent = browserVersion;
+
+            // Show/hide direct import/export buttons
+            const directImportBtn = document.getElementById('directImportBtn');
+            const directExportBtn = document.getElementById('directExportBtn');
+            
+            if (supportsDirectImport) {
+                directImportBtn.style.display = 'block';
+            }
+            if (supportsDirectExport) {
+                directExportBtn.style.display = 'block';
+            }
+
+            // Show options
+            document.getElementById('importExportOptions').style.display = 'block';
+        }
+
+        function importFromFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html,.json,.csv';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    processImportFile(file);
+                }
+            };
+            input.click();
+        }
+
+        function importFromBrowser() {
+            alert('Direct browser import requires the extension to be installed.');
+        }
+
+        function exportToFile() {
+            const format = document.querySelector('.format-btn.active').dataset.format;
+            const urls = document.getElementById('urls').value;
+            const folderName = document.getElementById('folderName').value;
+            
+            if (!urls.trim()) {
+                alert('Please enter some URLs first.');
+                return;
+            }
+
+            downloadBookmarks(urls, folderName, format);
+        }
+
+        function exportToBrowser() {
+            alert('Direct browser export requires the extension to be installed.');
+        }
+
+        function processImportFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const format = file.name.split('.').pop().toLowerCase();
+                
+                try {
+                    const urls = parseBookmarkFile(content, format);
+                    document.getElementById('urls').value = urls.join('\n');
+                    document.getElementById('folderName').value = file.name.replace(/\.[^/.]+$/, "");
+                    alert(`Successfully imported ${urls.length} bookmarks!`);
+                } catch (error) {
+                    alert('Error parsing bookmark file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseBookmarkFile(content, format) {
+            const urls = [];
+            
+            if (format === 'html') {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(content, 'text/html');
+                const links = doc.querySelectorAll('a[href]');
+                links.forEach(link => {
+                    if (link.href && link.href !== 'about:blank') {
+                        urls.push(link.href);
+                    }
+                });
+            } else if (format === 'json') {
+                const data = JSON.parse(content);
+                if (data.roots) {
+                    extractUrlsFromBookmarkTree(data.roots, urls);
+                } else if (Array.isArray(data)) {
+                    data.forEach(item => {
+                        if (item.url) urls.push(item.url);
+                    });
+                }
+            } else if (format === 'csv') {
+                const lines = content.split('\n');
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    if (parts.length >= 2 && parts[1].startsWith('http')) {
+                        urls.push(parts[1].replace(/"/g, ''));
+                    }
+                });
+            }
+            
+            return urls;
+        }
+
+        function extractUrlsFromBookmarkTree(roots, urls) {
+            Object.values(roots).forEach(root => {
+                if (root.children) {
+                    root.children.forEach(child => {
+                        if (child.url) {
+                            urls.push(child.url);
+                        } else if (child.children) {
+                            extractUrlsFromBookmarkTree({child}, urls);
+                        }
+                    });
+                }
+            });
+        }
+
+        function downloadBookmarks(urls, folderName, format) {
+            let content = '';
+            let filename = `${folderName || 'bookmarks'}.${format}`;
+            
+            if (format === 'html') {
+                content = generateHTMLBookmarks(urls, folderName);
+            } else if (format === 'json') {
+                content = generateJSONBookmarks(urls, folderName);
+            } else if (format === 'csv') {
+                content = generateCSVBookmarks(urls, folderName);
+            }
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function generateHTMLBookmarks(urls, folderName) {
+            const lines = urls.split('\n').filter(url => url.trim());
+            let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>${folderName || 'Bookmarks'}</H1>
+<DL><p>
+`;
+            
+            lines.forEach(url => {
+                const cleanUrl = url.trim();
+                if (cleanUrl) {
+                    html += `    <DT><A HREF="${cleanUrl}">${cleanUrl}</A>\n`;
+                }
+            });
+            
+            html += `</DL><p>`;
+            return html;
+        }
+
+        function generateJSONBookmarks(urls, folderName) {
+            const lines = urls.split('\n').filter(url => url.trim());
+            const bookmarks = {
+                version: 1,
+                roots: {
+                    bookmark_bar: {
+                        children: lines.map(url => ({
+                            name: url.trim(),
+                            type: 'url',
+                            url: url.trim()
+                        })),
+                        name: folderName || 'Bookmarks',
+                        type: 'folder'
+                    }
+                }
+            };
+            return JSON.stringify(bookmarks, null, 2);
+        }
+
+        function generateCSVBookmarks(urls, folderName) {
+            const lines = urls.split('\n').filter(url => url.trim());
+            let csv = 'Name,URL,Folder\n';
+            lines.forEach(url => {
+                const cleanUrl = url.trim();
+                if (cleanUrl) {
+                    csv += `"${cleanUrl}","${cleanUrl}","${folderName || 'Bookmarks'}"\n`;
+                }
+            });
+            return csv;
+        }
+
+        // Format button selection
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('format-btn')) {
+                document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
         
         // Floating Social Sidebar functionality
         document.addEventListener('DOMContentLoaded', function() {
