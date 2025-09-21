@@ -1686,6 +1686,10 @@
                                 🔗 Direct Browser Import
                             </button>
                         </div>
+                        <div style="font-size: 11px; color: #888; margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px;">
+                            💡 <strong>Web App:</strong> Imports to text area, then download HTML file<br>
+                            🔧 <strong>Extension:</strong> Direct import to browser bookmarks
+                        </div>
                     </div>
                     
                     <div class="option-section">
@@ -1697,6 +1701,10 @@
                             <button class="method-btn" onclick="exportToBrowser()" id="directExportBtn" style="display: none;">
                                 🔗 Direct Browser Export
                             </button>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px;">
+                            💡 <strong>Web App:</strong> Exports URLs from text area to file<br>
+                            🔧 <strong>Extension:</strong> Direct export from browser bookmarks
                         </div>
                     </div>
                     
@@ -2374,7 +2382,22 @@ https://www.theverge.com`
                     const urls = parseBookmarkFile(content, format);
                     document.getElementById('urls').value = urls.join('\n');
                     document.getElementById('folderName').value = file.name.replace(/\.[^/.]+$/, "");
-                    alert(`Successfully imported ${urls.length} bookmarks!`);
+                    
+                    // Show success message with instructions
+                    const message = `Successfully imported ${urls.length} bookmarks!\n\n` +
+                        `📋 URLs have been added to the text area.\n` +
+                        `📥 Click "Download HTML File" to get the processed bookmarks.\n` +
+                        `🔧 For direct browser import, install the browser extension.`;
+                    
+                    alert(message);
+                    
+                    // Auto-download the processed bookmarks for convenience
+                    setTimeout(() => {
+                        if (confirm('Would you like to automatically download the processed bookmarks as an HTML file?')) {
+                            downloadBookmarks(urls.join('\n'), file.name.replace(/\.[^/.]+$/, ""), 'html');
+                        }
+                    }, 1000);
+                    
                 } catch (error) {
                     alert('Error parsing bookmark file: ' + error.message);
                 }
