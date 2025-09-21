@@ -2600,11 +2600,14 @@ https://www.theverge.com`
                 }
             };
 
+            console.log('Sending message to extension:', message);
+            
             // Send message to content script via postMessage
             window.postMessage(message, '*');
             
             // Listen for response
             const handleResponse = (event) => {
+                console.log('Received message:', event.data);
                 if (event.data && event.data.type === 'BOOKMARK_CONVERTER_RESPONSE') {
                     window.removeEventListener('message', handleResponse);
                     

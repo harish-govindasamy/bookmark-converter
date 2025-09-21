@@ -436,7 +436,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Listen for messages from web app
 window.addEventListener('message', function(event) {
+    console.log('Content script received message:', event.data);
+    
     if (event.data && event.data.type === 'BOOKMARK_CONVERTER_PING') {
+        console.log('Responding to ping');
         // Respond to ping
         window.postMessage({
             type: 'BOOKMARK_CONVERTER_RESPONSE',
@@ -444,22 +447,35 @@ window.addEventListener('message', function(event) {
             message: 'Extension detected'
         }, '*');
     } else if (event.data && event.data.type === 'BOOKMARK_CONVERTER_MESSAGE') {
+        console.log('Handling web app message:', event.data);
         // Handle web app messages
         const { action, data } = event.data;
         
         if (action === 'importBookmarks' || action === 'exportBookmarks') {
+            console.log('Forwarding to background script:', { action, data });
             // Forward to background script
             chrome.runtime.sendMessage({
                 action: action,
                 data: data
             }, (response) => {
-                // Send response back to web app
-                window.postMessage({
-                    type: 'BOOKMARK_CONVERTER_RESPONSE',
-                    success: response ? response.success : false,
-                    message: response ? response.message : 'Extension communication failed',
-                    data: response ? response.data : null
-                }, '*');
+                console.log('Background script response:', response);
+                // Check for errors
+                if (chrome.runtime.lastError) {
+                    console.error('Extension communication error:', chrome.runtime.lastError);
+                    window.postMessage({
+                        type: 'BOOKMARK_CONVERTER_RESPONSE',
+                        success: false,
+                        message: 'Extension communication failed: ' + chrome.runtime.lastError.message
+                    }, '*');
+                } else {
+                    // Send response back to web app
+                    window.postMessage({
+                        type: 'BOOKMARK_CONVERTER_RESPONSE',
+                        success: response ? response.success : false,
+                        message: response ? response.message : 'Extension communication failed',
+                        data: response ? response.data : null
+                    }, '*');
+                }
             });
         }
     }
