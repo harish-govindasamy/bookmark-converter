@@ -9,8 +9,174 @@ import os
 import tempfile
 from datetime import datetime
 import json
+import sqlite3
+import threading
 
 app = Flask(__name__)
+
+# Database setup
+DATABASE = 'bookmark_stats.db'
+lock = threading.Lock()
+
+def init_database():
+    """Initialize the SQLite database for statistics tracking"""
+    with lock:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Create statistics table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS usage_stats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                url_count INTEGER NOT NULL,
+                folder_name TEXT,
+                conversion_type TEXT DEFAULT 'download'
+            )
+        ''')
+        
+        # Create daily summary table for better performance
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS daily_stats (
+                date TEXT PRIMARY KEY,
+                total_conversions INTEGER DEFAULT 0,
+                total_urls INTEGER DEFAULT 0,
+                last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+
+def log_conversion(url_count, folder_name, conversion_type='download'):
+    """Log a conversion to the database"""
+    with lock:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Insert the conversion record
+        cursor.execute('''
+            INSERT INTO usage_stats (url_count, folder_name, conversion_type)
+            VALUES (?, ?, ?)
+        ''', (url_count, folder_name, conversion_type))
+        
+        # Update daily stats
+        today = datetime.now().strftime('%Y-%m-%d')
+        cursor.execute('''
+            INSERT OR REPLACE INTO daily_stats (date, total_conversions, total_urls, last_updated)
+            VALUES (
+                ?,
+                COALESCE((SELECT total_conversions FROM daily_stats WHERE date = ?), 0) + 1,
+                COALESCE((SELECT total_urls FROM daily_stats WHERE date = ?), 0) + ?,
+                CURRENT_TIMESTAMP
+            )
+        ''', (today, today, today, url_count))
+        
+        conn.commit()
+        conn.close()
+
+def get_live_stats():
+    """Get live statistics from the database"""
+    with lock:
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # Get total stats
+        cursor.execute('''
+            SELECT 
+                COUNT(*) as total_conversions,
+                SUM(url_count) as total_urls
+            FROM usage_stats
+        ''')
+        total_stats = cursor.fetchone()
+        
+        # Get today's stats
+        today = datetime.now().strftime('%Y-%m-%d')
+        cursor.execute('''
+            SELECT total_conversions, total_urls
+            FROM daily_stats
+            WHERE date = ?
+        ''', (today,))
+        today_stats = cursor.fetchone()
+        
+        # Get recent activity (last 10 conversions)
+        cursor.execute('''
+            SELECT timestamp, url_count, folder_name, conversion_type
+            FROM usage_stats
+            ORDER BY timestamp DESC
+            LIMIT 10
+        ''')
+        recent_activity = cursor.fetchall()
+        
+        # Get daily stats for the last 7 days
+        cursor.execute('''
+            SELECT date, total_conversions, total_urls
+            FROM daily_stats
+            ORDER BY date DESC
+            LIMIT 7
+        ''')
+        weekly_stats = cursor.fetchall()
+        
+        conn.close()
+        
+        return {
+            'total_conversions': total_stats[0] or 0,
+            'total_urls': total_stats[1] or 0,
+            'today_conversions': today_stats[0] if today_stats else 0,
+            'today_urls': today_stats[1] if today_stats else 0,
+            'recent_activity': [
+                {
+                    'timestamp': activity[0],
+                    'url_count': activity[1],
+                    'folder_name': activity[2],
+                    'conversion_type': activity[3]
+                }
+                for activity in recent_activity
+            ],
+            'weekly_stats': [
+                {
+                    'date': stat[0],
+                    'conversions': stat[1],
+                    'urls': stat[2]
+                }
+                for stat in weekly_stats
+            ]
+        }
+
+# Initialize database on startup
+init_database()
+
+def add_sample_data():
+    """Add some sample data to demonstrate live statistics"""
+    try:
+        # Check if we already have data
+        stats = get_live_stats()
+        if stats['total_conversions'] > 0:
+            return  # Already has data
+        
+        # Add sample conversions
+        sample_conversions = [
+            (15, "Job Sites", "download"),
+            (8, "Tech Resources", "quickadd"),
+            (23, "News Sites", "download"),
+            (12, "Learning Resources", "quickadd"),
+            (31, "Remote Work", "download"),
+            (7, "Design Tools", "quickadd"),
+            (19, "Development", "download"),
+            (14, "Productivity", "quickadd"),
+            (26, "Research", "download"),
+            (9, "Social Media", "quickadd"),
+        ]
+        
+        for url_count, folder_name, conversion_type in sample_conversions:
+            log_conversion(url_count, folder_name, conversion_type)
+            
+        print("Sample data added to demonstrate live statistics")
+    except Exception as e:
+        print(f"Error adding sample data: {e}")
+
+# Add sample data for demonstration
+add_sample_data()
 
 def clean_and_process_urls(text):
     """
@@ -119,7 +285,7 @@ def convert():
             temp_file = f.name
         
         # Log usage for analytics
-        log_usage(url_count, folder_name)
+        log_conversion(url_count, folder_name, 'download')
         
         return jsonify({
             'success': True,
@@ -169,7 +335,7 @@ def add_to_browser():
                 })
         
         # Log usage for analytics
-        log_usage(len(bookmarks_data), folder_name)
+        log_conversion(len(bookmarks_data), folder_name, 'quickadd')
         
         return jsonify({
             'success': True,
@@ -183,42 +349,21 @@ def add_to_browser():
 
 @app.route('/analytics')
 def analytics():
-    """Simple analytics endpoint"""
+    """Live analytics endpoint with database statistics"""
     try:
-        with open('usage_log.json', 'r') as f:
-            data = json.load(f)
-        return jsonify(data)
-    except:
-        return jsonify({'total_conversions': 0, 'total_urls': 0, 'recent_activity': []})
-
-def log_usage(url_count, folder_name):
-    """Log usage for analytics"""
-    try:
-        # Try to read existing data
-        try:
-            with open('usage_log.json', 'r') as f:
-                data = json.load(f)
-        except:
-            data = {'total_conversions': 0, 'total_urls': 0, 'recent_activity': []}
-        
-        # Update data
-        data['total_conversions'] += 1
-        data['total_urls'] += url_count
-        data['recent_activity'].append({
-            'timestamp': datetime.now().isoformat(),
-            'url_count': url_count,
-            'folder_name': folder_name
-        })
-        
-        # Keep only last 50 activities
-        data['recent_activity'] = data['recent_activity'][-50:]
-        
-        # Write back
-        with open('usage_log.json', 'w') as f:
-            json.dump(data, f, indent=2)
-            
+        stats = get_live_stats()
+        return jsonify(stats)
     except Exception as e:
-        print(f"Analytics logging error: {e}")
+        print(f"Analytics error: {e}")
+        return jsonify({
+            'total_conversions': 0, 
+            'total_urls': 0, 
+            'today_conversions': 0,
+            'today_urls': 0,
+            'recent_activity': [],
+            'weekly_stats': []
+        })
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
