@@ -529,6 +529,53 @@
             padding: 40px;
         }
         
+        .extension-section {
+            margin-top: 20px;
+        }
+        
+        .extension-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .extension-btn {
+            background: #0a0a0a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        
+        .extension-btn.auto-detect {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        
+        .extension-btn.auto-detect:hover {
+            background: #218838;
+            border-color: #1e7e34;
+        }
+        
+        .extension-btn.all-extensions {
+            background: #4facfe;
+            border-color: #4facfe;
+            color: white;
+        }
+        
+        .extension-btn.all-extensions:hover {
+            background: #3d8bfe;
+            border-color: #3d8bfe;
+        }
+        
         .examples h3 {
             margin-bottom: 30px;
             color: #fff;
@@ -998,6 +1045,11 @@
                 padding: 30px 20px;
             }
             
+            .extension-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
             .action-buttons {
                 grid-template-columns: 1fr;
                 gap: 15px;
@@ -1123,11 +1175,15 @@
                     <span class="help-text">How to Import Bookmarks</span>
                     <div class="help-tooltip" id="helpTooltip">Click to see browser import guides</div>
                 </button>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="example-btn" onclick="installExtension()" style="background: #28a745; border-color: #28a745; color: white; font-size: 12px;">
+            </div>
+            
+            <!-- Extension Buttons Section -->
+            <div class="extension-section">
+                <div class="extension-buttons">
+                    <button class="extension-btn auto-detect" onclick="installExtension()">
                         📦 Auto-Detect
                     </button>
-                    <button class="example-btn" onclick="showAllExtensions()" style="background: #4facfe; border-color: #4facfe; color: white; font-size: 12px;">
+                    <button class="extension-btn all-extensions" onclick="showAllExtensions()">
                         🌐 All Extensions
                     </button>
                 </div>
