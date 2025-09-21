@@ -68,6 +68,155 @@
             font-weight: 500;
         }
         
+        .live-stats-inline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 12px 0;
+            margin: 20px 0;
+            font-size: 0.9em;
+            color: #888;
+            border-bottom: 1px solid #333;
+        }
+        
+        .live-stats-inline .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .live-stats-inline .stat-item:hover {
+            color: #4facfe;
+        }
+        
+        .live-stats-inline .stat-value {
+            color: #4facfe;
+            font-weight: 600;
+        }
+        
+        .live-stats-inline .reports-link {
+            color: #00f2fe;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .live-stats-inline .reports-link:hover {
+            background: rgba(0, 242, 254, 0.1);
+            color: #00f2fe;
+        }
+        
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+        
+        .live-indicator.online {
+            background: #28a745;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Popup Modal Styles */
+        .stats-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .stats-popup.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stats-popup-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .stats-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .stats-popup-header h2 {
+            color: #4facfe;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .stats-popup-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stats-popup-close:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        .stats-popup-body {
+            padding: 30px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
         .feature-badge {
             background: #ff6b6b;
             color: white;
@@ -834,6 +983,29 @@
             </div>
         </div>
         
+        <!-- Live Statistics Inline Display -->
+        <div class="live-stats-inline" id="inlineStats">
+            <div class="stat-item">
+                <div class="live-indicator" id="inlineStatusIndicator"></div>
+                <span>Live</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="inlineTotalConversions">0</span>
+                <span>conversions</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="inlineTotalUrls">0</span>
+                <span>URLs processed</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="inlineTodayConversions">0</span>
+                <span>today</span>
+            </div>
+            <a href="#" class="reports-link" onclick="openStatsPopup(); return false;">
+                📊 Reports
+            </a>
+        </div>
+        
         <div class="content">
             <div class="form-section">
                 <form id="converterForm">
@@ -1254,6 +1426,22 @@
         </a>
     </div>
 
+    <!-- Statistics Popup Modal -->
+    <div class="stats-popup" id="statsPopup" onclick="closeStatsPopup(event)">
+        <div class="stats-popup-content" onclick="event.stopPropagation()">
+            <div class="stats-popup-header">
+                <h2>📊 Live Usage Statistics</h2>
+                <button class="stats-popup-close" onclick="closeStatsPopup()">&times;</button>
+            </div>
+            <div class="stats-popup-body" id="popupStatsContent">
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
+                    <div>Loading detailed statistics...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const examples = {
             'job-sites': `https://toptal.com
@@ -1603,7 +1791,27 @@ https://www.theverge.com`
             }
         }
 
+        function updateInlineStats(data) {
+            // Update inline statistics display
+            const formatNumber = (num) => num.toLocaleString();
+            
+            document.getElementById('inlineTotalConversions').textContent = formatNumber(data.total_conversions);
+            document.getElementById('inlineTotalUrls').textContent = formatNumber(data.total_urls);
+            document.getElementById('inlineTodayConversions').textContent = formatNumber(data.today_conversions);
+            
+            // Update live indicator
+            const indicator = document.getElementById('inlineStatusIndicator');
+            if (isConnected) {
+                indicator.classList.add('online');
+            } else {
+                indicator.classList.remove('online');
+            }
+        }
+
         function updateStatsDisplay(data) {
+            // Update inline stats first
+            updateInlineStats(data);
+            
             // Format numbers with commas
             const formatNumber = (num) => num.toLocaleString();
             
@@ -1758,6 +1966,115 @@ https://www.theverge.com`
             
             activityHTML += '</div>';
             activitySection.innerHTML = activityHTML;
+        }
+
+        // Popup functions
+        function openStatsPopup() {
+            const popup = document.getElementById('statsPopup');
+            popup.classList.add('show');
+            
+            // Load detailed stats for popup
+            loadPopupStats();
+        }
+        
+        function closeStatsPopup(event) {
+            if (event && event.target !== event.currentTarget) {
+                return; // Don't close if clicking inside the popup content
+            }
+            const popup = document.getElementById('statsPopup');
+            popup.classList.remove('show');
+        }
+        
+        async function loadPopupStats() {
+            try {
+                const response = await fetch('/analytics');
+                const data = await response.json();
+                updatePopupStats(data);
+            } catch (error) {
+                document.getElementById('popupStatsContent').innerHTML = `
+                    <div style="color: #ff6b6b; text-align: center; padding: 40px;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+                        <div>Failed to load detailed statistics</div>
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        function updatePopupStats(data) {
+            const formatNumber = (num) => num.toLocaleString();
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            
+            document.getElementById('popupStatsContent').innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #4facfe; font-size: 20px; font-weight: bold;">${formatNumber(data.total_conversions)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Total Conversions</div>
+                    </div>
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #00f2fe; font-size: 20px; font-weight: bold;">${formatNumber(data.total_urls)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">URLs Processed</div>
+                    </div>
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #ffd700; font-size: 20px; font-weight: bold;">${formatNumber(data.unique_users)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Unique Users</div>
+                    </div>
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #ff6b6b; font-size: 20px; font-weight: bold;">${data.success_rate}%</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Success Rate</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${formatNumber(data.today_conversions)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Conversions</div>
+                    </div>
+                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${formatNumber(data.today_urls)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's URLs</div>
+                    </div>
+                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${formatNumber(data.today_unique_users)}</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Users</div>
+                    </div>
+                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${data.avg_processing_time}ms</div>
+                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Avg Processing</div>
+                    </div>
+                </div>
+                
+                <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 6px; padding: 15px; margin-bottom: 20px;">
+                    <div style="color: #28a745; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        ${isConnected ? '🔴 LIVE' : '⚪ OFFLINE'} • Last updated: ${timeStr}
+                    </div>
+                </div>
+                
+                ${data.recent_activity && data.recent_activity.length > 0 ? `
+                    <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                        <h4 style="color: #fff; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            📈 Recent Activity (Last 10)
+                        </h4>
+                        <div style="display: grid; gap: 8px;">
+                            ${data.recent_activity.slice(0, 10).map(activity => {
+                                const time = new Date(activity.timestamp).toLocaleString();
+                                const typeIcon = activity.conversion_type === 'quickadd' ? '⚡' : '📥';
+                                return `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #2a2a2a; border-radius: 6px; border: 1px solid #444;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 14px;">${typeIcon}</span>
+                                            <span style="color: #fff; font-size: 13px;">${activity.url_count} URLs</span>
+                                            <span style="color: #888; font-size: 12px;">• ${activity.folder_name}</span>
+                                        </div>
+                                        <span style="color: #888; font-size: 11px;">${time}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
         }
 
         // Initialize WebSocket connection
