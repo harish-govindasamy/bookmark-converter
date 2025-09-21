@@ -1685,6 +1685,9 @@
                             <button class="method-btn" onclick="importFromBrowser()" id="directImportBtn" style="display: none;">
                                 🔗 Direct Browser Import
                             </button>
+                            <button class="method-btn" onclick="testExtensionCommunication()" style="background: #ffc107; color: black; margin-left: 5px;">
+                                🧪 Test Extension
+                            </button>
                         </div>
                         <div style="font-size: 11px; color: #888; margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px;">
                             💡 <strong>Web App:</strong> Imports to text area, then download HTML file<br>
@@ -2356,12 +2359,14 @@ https://www.theverge.com`
 
         function importFromBrowser() {
             // Check if extension is installed
-            if (isExtensionInstalled()) {
-                // Send message to extension to import bookmarks
-                sendMessageToExtension('importBookmarks');
-            } else {
-                alert('Direct browser import requires the extension to be installed.\n\nPlease install the extension first.');
-            }
+            isExtensionInstalled().then((installed) => {
+                if (installed) {
+                    // Send message to extension to import bookmarks
+                    sendMessageToExtension('importBookmarks');
+                } else {
+                    alert('Direct browser import requires the extension to be installed.\n\nPlease install the extension first.');
+                }
+            });
         }
 
         function exportToFile() {
@@ -2379,12 +2384,14 @@ https://www.theverge.com`
 
         function exportToBrowser() {
             // Check if extension is installed
-            if (isExtensionInstalled()) {
-                // Send message to extension to export bookmarks
-                sendMessageToExtension('exportBookmarks');
-            } else {
-                alert('Direct browser export requires the extension to be installed.\n\nPlease install the extension first.');
-            }
+            isExtensionInstalled().then((installed) => {
+                if (installed) {
+                    // Send message to extension to export bookmarks
+                    sendMessageToExtension('exportBookmarks');
+                } else {
+                    alert('Direct browser export requires the extension to be installed.\n\nPlease install the extension first.');
+                }
+            });
         }
 
         function processImportFile(file) {
@@ -2629,8 +2636,36 @@ https://www.theverge.com`
             // Timeout after 5 seconds
             setTimeout(() => {
                 window.removeEventListener('message', handleResponse);
+                console.log('Extension communication timeout - no response received');
                 alert('❌ Extension not responding. Please make sure the extension is installed and enabled.');
             }, 5000);
+        }
+
+        // Test function to check extension communication
+        function testExtensionCommunication() {
+            console.log('Testing extension communication...');
+            const message = {
+                type: 'BOOKMARK_CONVERTER_PING',
+                action: 'ping'
+            };
+            
+            window.postMessage(message, '*');
+            
+            const handleResponse = (event) => {
+                if (event.data && event.data.type === 'BOOKMARK_CONVERTER_RESPONSE') {
+                    window.removeEventListener('message', handleResponse);
+                    console.log('Extension test response:', event.data);
+                    alert('Extension test: ' + (event.data.success ? '✅ Working' : '❌ Failed'));
+                }
+            };
+            
+            window.addEventListener('message', handleResponse);
+            
+            setTimeout(() => {
+                window.removeEventListener('message', handleResponse);
+                console.log('Extension test timeout');
+                alert('❌ Extension test failed - no response');
+            }, 2000);
         }
 
         // Enhanced extension detection that tries to find the actual extension
