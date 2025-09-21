@@ -40,3 +40,9 @@ usage_log.json
 # Don't ignore template HTML files
 # *.html
 temp_*
+
+# Enterprise Analytics Files
+analytics.log
+bookmark_stats.db
+*.db
+*.log
