@@ -1,0 +1,236 @@
+[
+  {
+    "category": "Web App",
+    "test_name": "Browser Detection",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.326979"
+  },
+  {
+    "category": "Web App",
+    "test_name": "HTML Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.328263"
+  },
+  {
+    "category": "Web App",
+    "test_name": "JSON Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.328694"
+  },
+  {
+    "category": "Web App",
+    "test_name": "CSV Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.328933"
+  },
+  {
+    "category": "Web App",
+    "test_name": "HTML Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.329142"
+  },
+  {
+    "category": "Web App",
+    "test_name": "JSON Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.331550"
+  },
+  {
+    "category": "Web App",
+    "test_name": "CSV Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.332608"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Extension Load",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.334309"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Bookmark Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.337434"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Bookmark Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.338833"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Backup Creation",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.340008"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Restore Function",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.341063"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Extension Load",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.342082"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Bookmark Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.343209"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Bookmark Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.344390"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Backup Creation",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.345872"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Restore Function",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.348713"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Extension Structure",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.350615"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Import Interface",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.351743"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Export Interface",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.353325"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Backup Interface",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.354368"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Chrome",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.355601"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Firefox",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.355950"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Safari",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.356211"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Edge",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.356464"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Brave",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.356697"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Vivaldi",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.356920"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Chrome",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.357136"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Firefox",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.357364"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Safari",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.357628"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Edge",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.357856"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Brave",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.358088"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Vivaldi",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.358317"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Chrome",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.358551"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Firefox",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.358787"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Safari",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.359010"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Edge",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.359230"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Brave",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.359454"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Vivaldi",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:49.359783"
+  }
+]

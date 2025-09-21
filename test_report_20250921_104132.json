@@ -1,0 +1,236 @@
+[
+  {
+    "category": "Web App",
+    "test_name": "Browser Detection",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.509966"
+  },
+  {
+    "category": "Web App",
+    "test_name": "HTML Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.511587"
+  },
+  {
+    "category": "Web App",
+    "test_name": "JSON Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.511950"
+  },
+  {
+    "category": "Web App",
+    "test_name": "CSV Import",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.512170"
+  },
+  {
+    "category": "Web App",
+    "test_name": "HTML Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.512432"
+  },
+  {
+    "category": "Web App",
+    "test_name": "JSON Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.513186"
+  },
+  {
+    "category": "Web App",
+    "test_name": "CSV Export",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.513669"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Extension Load",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.516567"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Bookmark Import",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x81 in position 15687: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.518267"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Bookmark Export",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x81 in position 15687: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.519576"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Backup Creation",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x81 in position 15687: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.523352"
+  },
+  {
+    "category": "Chrome Extension",
+    "test_name": "Restore Function",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x81 in position 15687: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.525535"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Extension Load",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.528333"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Bookmark Import",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x9d in position 2870: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.529509"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Bookmark Export",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x9d in position 2870: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.531955"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Backup Creation",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x9d in position 2870: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.534004"
+  },
+  {
+    "category": "Firefox Extension",
+    "test_name": "Restore Function",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x9d in position 2870: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.535160"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Extension Structure",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.538513"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Import Interface",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x81 in position 6853: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.541398"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Export Interface",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x81 in position 6853: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.543489"
+  },
+  {
+    "category": "Safari Extension",
+    "test_name": "Backup Interface",
+    "result": "ERROR: 'charmap' codec can't decode byte 0x81 in position 6853: character maps to <undefined>",
+    "timestamp": "2025-09-21T10:41:32.545323"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Chrome",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.547784"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Firefox",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.549004"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Safari",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.549509"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Edge",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.549992"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Brave",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.550557"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "HTML - Vivaldi",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.551113"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Chrome",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.551931"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Firefox",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.552316"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Safari",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.552990"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Edge",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.553875"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Brave",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.555060"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "JSON - Vivaldi",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.555469"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Chrome",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.556131"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Firefox",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.557362"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Safari",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.558146"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Edge",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.559119"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Brave",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.559725"
+  },
+  {
+    "category": "Format Compatibility",
+    "test_name": "CSV - Vivaldi",
+    "result": "PASS",
+    "timestamp": "2025-09-21T10:41:32.560106"
+  }
+]

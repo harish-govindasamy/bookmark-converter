@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
     bookmarkBtn.addEventListener('click', bookmarkUrls);
     openWebAppBtn.addEventListener('click', openWebAppAction);
     
+    // Import/Export event listeners
+    document.getElementById('importBookmarks').addEventListener('click', importBookmarksAction);
+    document.getElementById('exportBookmarks').addEventListener('click', exportBookmarksAction);
+    document.getElementById('backupBookmarks').addEventListener('click', backupBookmarksAction);
+    document.getElementById('restoreBookmarks').addEventListener('click', restoreBookmarksAction);
+    
     // Load saved settings
     async function loadSettings() {
         try {
@@ -394,6 +400,270 @@ document.addEventListener('DOMContentLoaded', function() {
             isDropdownOpen = false;
             folderDropdown.style.display = 'none';
             dropdownBtn.textContent = '▼';
+        }
+    }
+
+    // Import/Export Functions
+    async function importBookmarksAction() {
+        try {
+            showStatus('Opening file selector...', 'loading');
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html,.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await processImportFile(file);
+                }
+            };
+            input.click();
+            
+            hideStatus();
+        } catch (error) {
+            showStatus('Failed to open file selector: ' + error.message, 'error');
+        }
+    }
+
+    async function exportBookmarksAction() {
+        try {
+            showStatus('Exporting bookmarks...', 'loading');
+            
+            const bookmarks = await browser.bookmarks.getTree();
+            const htmlContent = generateHTMLBookmarks(bookmarks);
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bookmarks_export_${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus('Bookmarks exported successfully!', 'success');
+        } catch (error) {
+            showStatus('Failed to export bookmarks: ' + error.message, 'error');
+        }
+    }
+
+    async function backupBookmarksAction() {
+        try {
+            showStatus('Creating backup...', 'loading');
+            
+            const bookmarks = await browser.bookmarks.getTree();
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                version: '1.0',
+                bookmarks: bookmarks
+            };
+            
+            const jsonContent = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bookmarks_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus('Backup created successfully!', 'success');
+        } catch (error) {
+            showStatus('Failed to create backup: ' + error.message, 'error');
+        }
+    }
+
+    async function restoreBookmarksAction() {
+        try {
+            showStatus('Opening restore file selector...', 'loading');
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await processRestoreFile(file);
+                }
+            };
+            input.click();
+            
+            hideStatus();
+        } catch (error) {
+            showStatus('Failed to open restore file selector: ' + error.message, 'error');
+        }
+    }
+
+    async function processImportFile(file) {
+        try {
+            showStatus('Processing import file...', 'loading');
+            
+            const content = await readFileAsText(file);
+            const format = file.name.split('.').pop().toLowerCase();
+            
+            if (format === 'html') {
+                await importHTMLBookmarks(content);
+            } else if (format === 'json') {
+                await importJSONBookmarks(content);
+            } else {
+                throw new Error('Unsupported file format');
+            }
+            
+            showStatus('Bookmarks imported successfully!', 'success');
+        } catch (error) {
+            showStatus('Failed to import bookmarks: ' + error.message, 'error');
+        }
+    }
+
+    async function processRestoreFile(file) {
+        try {
+            showStatus('Processing restore file...', 'loading');
+            
+            const content = await readFileAsText(file);
+            const backupData = JSON.parse(content);
+            
+            if (!backupData.bookmarks) {
+                throw new Error('Invalid backup file format');
+            }
+            
+            await restoreBookmarksFromBackup(backupData.bookmarks);
+            
+            showStatus('Bookmarks restored successfully!', 'success');
+        } catch (error) {
+            showStatus('Failed to restore bookmarks: ' + error.message, 'error');
+        }
+    }
+
+    function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+        });
+    }
+
+    async function importHTMLBookmarks(htmlContent) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const links = doc.querySelectorAll('a[href]');
+        
+        for (const link of links) {
+            if (link.href && link.href !== 'about:blank') {
+                await browser.bookmarks.create({
+                    title: link.textContent || link.href,
+                    url: link.href
+                });
+            }
+        }
+    }
+
+    async function importJSONBookmarks(jsonContent) {
+        const data = JSON.parse(jsonContent);
+        
+        if (data.roots) {
+            await importBookmarkTree(data.roots);
+        } else if (Array.isArray(data)) {
+            for (const item of data) {
+                if (item.url) {
+                    await browser.bookmarks.create({
+                        title: item.title || item.name || item.url,
+                        url: item.url
+                    });
+                }
+            }
+        }
+    }
+
+    async function importBookmarkTree(roots) {
+        for (const [key, root] of Object.entries(roots)) {
+            if (root.children) {
+                for (const child of root.children) {
+                    if (child.url) {
+                        await browser.bookmarks.create({
+                            title: child.title || child.name || child.url,
+                            url: child.url
+                        });
+                    } else if (child.children) {
+                        await importBookmarkTree({child});
+                    }
+                }
+            }
+        }
+    }
+
+    async function restoreBookmarksFromBackup(bookmarks) {
+        for (const bookmark of bookmarks) {
+            if (bookmark.url) {
+                await browser.bookmarks.create({
+                    title: bookmark.title || bookmark.name || bookmark.url,
+                    url: bookmark.url
+                });
+            }
+        }
+    }
+
+    function generateHTMLBookmarks(bookmarks) {
+        let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+`;
+        
+        const extractBookmarks = (nodes) => {
+            for (const node of nodes) {
+                if (node.url) {
+                    html += `    <DT><A HREF="${node.url}">${node.title || node.url}</A>\n`;
+                }
+                if (node.children) {
+                    extractBookmarks(node.children);
+                }
+            }
+        };
+        
+        extractBookmarks(bookmarks);
+        html += `</DL><p>`;
+        return html;
+    }
+
+    function showStatus(message, type) {
+        // Create or update status element
+        let statusEl = document.getElementById('status');
+        if (!statusEl) {
+            statusEl = document.createElement('div');
+            statusEl.id = 'status';
+            statusEl.style.cssText = `
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 4px;
+                font-size: 12px;
+                text-align: center;
+            `;
+            document.querySelector('.container').appendChild(statusEl);
+        }
+        
+        statusEl.textContent = message;
+        statusEl.className = type;
+        
+        if (type === 'success') {
+            statusEl.style.background = '#d4edda';
+            statusEl.style.color = '#155724';
+            statusEl.style.border = '1px solid #c3e6cb';
+        } else if (type === 'error') {
+            statusEl.style.background = '#f8d7da';
+            statusEl.style.color = '#721c24';
+            statusEl.style.border = '1px solid #f5c6cb';
+        } else if (type === 'loading') {
+            statusEl.style.background = '#d1ecf1';
+            statusEl.style.color = '#0c5460';
+            statusEl.style.border = '1px solid #bee5eb';
+        }
+    }
+
+    function hideStatus() {
+        const statusEl = document.getElementById('status');
+        if (statusEl) {
+            statusEl.style.display = 'none';
         }
     }
 });

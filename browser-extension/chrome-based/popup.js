@@ -33,6 +33,12 @@ class BookmarkConverterPro {
         this.bookmarkAllTabs = document.getElementById('bookmarkAllTabs');
         this.openWebApp = document.getElementById('openWebApp');
         this.manageBookmarks = document.getElementById('manageBookmarks');
+
+        // Import/Export buttons
+        this.importBookmarks = document.getElementById('importBookmarks');
+        this.exportBookmarks = document.getElementById('exportBookmarks');
+        this.backupBookmarks = document.getElementById('backupBookmarks');
+        this.restoreBookmarks = document.getElementById('restoreBookmarks');
     }
 
     initializeEventListeners() {
@@ -62,6 +68,23 @@ class BookmarkConverterPro {
 
         this.manageBookmarks.addEventListener('click', () => {
             this.manageBookmarksAction();
+        });
+
+        // Import/Export actions
+        this.importBookmarks.addEventListener('click', () => {
+            this.importBookmarksAction();
+        });
+
+        this.exportBookmarks.addEventListener('click', () => {
+            this.exportBookmarksAction();
+        });
+
+        this.backupBookmarks.addEventListener('click', () => {
+            this.backupBookmarksAction();
+        });
+
+        this.restoreBookmarks.addEventListener('click', () => {
+            this.restoreBookmarksAction();
         });
     }
 
@@ -671,6 +694,232 @@ ${bookmarkItems}    </DL><p>
     manageBookmarksAction() {
         chrome.tabs.create({ url: 'chrome://bookmarks/' });
         window.close();
+    }
+
+    // Import/Export Functions
+    async importBookmarksAction() {
+        try {
+            this.showLoading('Opening file selector...');
+            
+            // Create file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html,.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await this.processImportFile(file);
+                }
+            };
+            input.click();
+            
+            this.hideStatus();
+        } catch (error) {
+            this.showError('Failed to open file selector: ' + error.message);
+        }
+    }
+
+    async exportBookmarksAction() {
+        try {
+            this.showLoading('Exporting bookmarks...');
+            
+            const bookmarks = await chrome.bookmarks.getTree();
+            const htmlContent = this.generateHTMLBookmarks(bookmarks);
+            
+            // Download file
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bookmarks_export_${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            this.showSuccess('Bookmarks exported successfully!');
+        } catch (error) {
+            this.showError('Failed to export bookmarks: ' + error.message);
+        }
+    }
+
+    async backupBookmarksAction() {
+        try {
+            this.showLoading('Creating backup...');
+            
+            const bookmarks = await chrome.bookmarks.getTree();
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                version: '1.0',
+                bookmarks: bookmarks
+            };
+            
+            const jsonContent = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bookmarks_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            this.showSuccess('Backup created successfully!');
+        } catch (error) {
+            this.showError('Failed to create backup: ' + error.message);
+        }
+    }
+
+    async restoreBookmarksAction() {
+        try {
+            this.showLoading('Opening restore file selector...');
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await this.processRestoreFile(file);
+                }
+            };
+            input.click();
+            
+            this.hideStatus();
+        } catch (error) {
+            this.showError('Failed to open restore file selector: ' + error.message);
+        }
+    }
+
+    async processImportFile(file) {
+        try {
+            this.showLoading('Processing import file...');
+            
+            const content = await this.readFileAsText(file);
+            const format = file.name.split('.').pop().toLowerCase();
+            
+            if (format === 'html') {
+                await this.importHTMLBookmarks(content);
+            } else if (format === 'json') {
+                await this.importJSONBookmarks(content);
+            } else {
+                throw new Error('Unsupported file format');
+            }
+            
+            this.showSuccess('Bookmarks imported successfully!');
+        } catch (error) {
+            this.showError('Failed to import bookmarks: ' + error.message);
+        }
+    }
+
+    async processRestoreFile(file) {
+        try {
+            this.showLoading('Processing restore file...');
+            
+            const content = await this.readFileAsText(file);
+            const backupData = JSON.parse(content);
+            
+            if (!backupData.bookmarks) {
+                throw new Error('Invalid backup file format');
+            }
+            
+            // Restore bookmarks
+            await this.restoreBookmarksFromBackup(backupData.bookmarks);
+            
+            this.showSuccess('Bookmarks restored successfully!');
+        } catch (error) {
+            this.showError('Failed to restore bookmarks: ' + error.message);
+        }
+    }
+
+    readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+        });
+    }
+
+    async importHTMLBookmarks(htmlContent) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const links = doc.querySelectorAll('a[href]');
+        
+        for (const link of links) {
+            if (link.href && link.href !== 'about:blank') {
+                await chrome.bookmarks.create({
+                    title: link.textContent || link.href,
+                    url: link.href
+                });
+            }
+        }
+    }
+
+    async importJSONBookmarks(jsonContent) {
+        const data = JSON.parse(jsonContent);
+        
+        if (data.roots) {
+            await this.importBookmarkTree(data.roots);
+        } else if (Array.isArray(data)) {
+            for (const item of data) {
+                if (item.url) {
+                    await chrome.bookmarks.create({
+                        title: item.title || item.name || item.url,
+                        url: item.url
+                    });
+                }
+            }
+        }
+    }
+
+    async importBookmarkTree(roots) {
+        for (const [key, root] of Object.entries(roots)) {
+            if (root.children) {
+                for (const child of root.children) {
+                    if (child.url) {
+                        await chrome.bookmarks.create({
+                            title: child.title || child.name || child.url,
+                            url: child.url
+                        });
+                    } else if (child.children) {
+                        await this.importBookmarkTree({child});
+                    }
+                }
+            }
+        }
+    }
+
+    async restoreBookmarksFromBackup(bookmarks) {
+        for (const bookmark of bookmarks) {
+            if (bookmark.url) {
+                await chrome.bookmarks.create({
+                    title: bookmark.title || bookmark.name || bookmark.url,
+                    url: bookmark.url
+                });
+            }
+        }
+    }
+
+    generateHTMLBookmarks(bookmarks) {
+        let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+`;
+        
+        const extractBookmarks = (nodes) => {
+            for (const node of nodes) {
+                if (node.url) {
+                    html += `    <DT><A HREF="${node.url}">${node.title || node.url}</A>\n`;
+                }
+                if (node.children) {
+                    extractBookmarks(node.children);
+                }
+            }
+        };
+        
+        extractBookmarks(bookmarks);
+        html += `</DL><p>`;
+        return html;
     }
 
     async loadSettings() {
