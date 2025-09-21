@@ -458,12 +458,15 @@ window.addEventListener('message', function(event) {
             
             // Check if we have access to chrome.runtime
             if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+                console.log('Sending message to background script...');
                 // Forward to background script
                 chrome.runtime.sendMessage({
                     action: action,
                     data: data
                 }, (response) => {
-                    console.log('Background script response:', response);
+                    console.log('Background script response received:', response);
+                    console.log('Chrome runtime last error:', chrome.runtime.lastError);
+                    
                     // Check for errors
                     if (chrome.runtime.lastError) {
                         console.error('Extension communication error:', chrome.runtime.lastError);
@@ -473,6 +476,7 @@ window.addEventListener('message', function(event) {
                             message: 'Extension communication failed: ' + chrome.runtime.lastError.message
                         }, '*');
                     } else {
+                        console.log('Sending success response to web app');
                         // Send response back to web app
                         window.postMessage({
                             type: 'BOOKMARK_CONVERTER_RESPONSE',

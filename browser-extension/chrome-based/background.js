@@ -37,6 +37,8 @@ chrome.commands.onCommand.addListener((command) => {
 // Handle messages from content scripts and popup with comprehensive error handling
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('📨 Message received:', request.action, 'from:', sender.tab?.url || 'popup');
+    console.log('📨 Full request:', request);
+    console.log('📨 Sender:', sender);
     
     try {
         switch (request.action) {
