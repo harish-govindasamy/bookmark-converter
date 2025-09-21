@@ -1825,15 +1825,17 @@ https://www.theverge.com`
         }
 
         function updateConnectionStatus(connected) {
-            const indicator = document.getElementById('statusIndicator');
-            const text = document.getElementById('statusText');
+            const indicator = document.getElementById('inlineStatusIndicator');
+            const textElement = indicator.nextElementSibling; // The "Live" span next to the indicator
             
-            if (connected) {
-                indicator.style.background = '#28a745';
-                text.textContent = 'Live';
-            } else {
-                indicator.style.background = '#ff6b6b';
-                text.textContent = 'Offline';
+            if (indicator && textElement) {
+                if (connected) {
+                    indicator.style.background = '#28a745';
+                    textElement.textContent = 'Live';
+                } else {
+                    indicator.style.background = '#ff6b6b';
+                    textElement.textContent = 'Offline';
+                }
             }
         }
 
