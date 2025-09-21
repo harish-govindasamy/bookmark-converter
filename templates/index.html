@@ -1688,6 +1688,9 @@
                             <button class="method-btn" onclick="testExtensionCommunication()" style="background: #ffc107; color: black; margin-left: 5px;">
                                 🧪 Test Extension
                             </button>
+                            <button class="method-btn" onclick="testImportExport()" style="background: #17a2b8; color: white; margin-left: 5px;">
+                                🔬 Test Import/Export
+                            </button>
                         </div>
                         <div style="font-size: 11px; color: #888; margin-top: 8px; padding: 8px; background: #1a1a1a; border-radius: 4px;">
                             💡 <strong>Web App:</strong> Imports to text area, then download HTML file<br>
@@ -2666,6 +2669,37 @@ https://www.theverge.com`
                 console.log('Extension test timeout');
                 alert('❌ Extension test failed - no response');
             }, 2000);
+        }
+
+        // Simple test for import/export without complex data
+        function testImportExport() {
+            console.log('Testing simple import/export...');
+            const message = {
+                type: 'BOOKMARK_CONVERTER_MESSAGE',
+                action: 'exportBookmarks',
+                data: {
+                    urls: 'https://example.com',
+                    folderName: 'Test Folder'
+                }
+            };
+            
+            window.postMessage(message, '*');
+            
+            const handleResponse = (event) => {
+                if (event.data && event.data.type === 'BOOKMARK_CONVERTER_RESPONSE') {
+                    window.removeEventListener('message', handleResponse);
+                    console.log('Import/Export test response:', event.data);
+                    alert('Import/Export test: ' + (event.data.success ? '✅ Working' : '❌ Failed - ' + event.data.message));
+                }
+            };
+            
+            window.addEventListener('message', handleResponse);
+            
+            setTimeout(() => {
+                window.removeEventListener('message', handleResponse);
+                console.log('Import/Export test timeout');
+                alert('❌ Import/Export test failed - no response');
+            }, 5000);
         }
 
         // Enhanced extension detection that tries to find the actual extension
