@@ -1960,12 +1960,15 @@ https://www.theverge.com`
                 </button>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                 <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-chrome.zip" target="_blank" style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; text-align: center; transition: all 0.2s ease;">
                     🔥 Chrome/Edge/Brave
                 </a>
                 <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-firefox.zip" target="_blank" style="background: #ff9500; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; text-align: center; transition: all 0.2s ease;">
                     🦊 Firefox
+                </a>
+                <a href="https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-safari.zip" target="_blank" style="background: #007aff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; text-align: center; transition: all 0.2s ease;">
+                    🍎 Safari
                 </a>
             </div>
         </div>
@@ -2633,6 +2636,11 @@ https://www.theverge.com`
                 installUrl = 'about:debugging';
                 extensionUrl = 'https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-firefox.zip';
                 extensionName = 'Firefox Extension (ZIP for Temporary Install)';
+            } else if (userAgent.includes('safari') && !userAgent.includes('chrome')) {
+                browser = 'Safari';
+                installUrl = 'safari://extensions/';
+                extensionUrl = 'https://raw.githubusercontent.com/harish-govindasamy/bookmark-converter/main/browser-extension/bookmark-converter-pro-safari.zip';
+                extensionName = 'Safari Extension (ZIP for Manual Install)';
             } else if (userAgent.includes('chrome') || userAgent.includes('edg') || userAgent.includes('brave') || userAgent.includes('opera') || userAgent.includes('vivaldi')) {
                 // Chrome-based browsers
                 if (userAgent.includes('edg')) {
