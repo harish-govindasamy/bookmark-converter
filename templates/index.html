@@ -195,42 +195,14 @@
             overflow-y: auto;
             position: relative;
             animation: slideIn 0.3s ease;
-            /* Modern scrollbar styling */
-            scrollbar-width: thin;
-            scrollbar-color: #4facfe #2a2a2a;
+            /* Completely invisible scrollbar */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         
-        /* Webkit scrollbar styling for modern browsers */
+        /* Completely hide scrollbar for all browsers */
         .stats-popup-content::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .stats-popup-content::-webkit-scrollbar-track {
-            background: #2a2a2a;
-            border-radius: 4px;
-        }
-        
-        .stats-popup-content::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        
-        .stats-popup-content::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            box-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
-        }
-        
-        /* Hide scrollbar for mobile and smaller screens */
-        @media (max-width: 768px) {
-            .stats-popup-content {
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-            }
-            
-            .stats-popup-content::-webkit-scrollbar {
-                display: none;
-            }
+            display: none;
         }
         
         .stats-popup-header {
@@ -1100,7 +1072,6 @@
                 <span>Smart URL Processing - Automatically cleans messy text and adds https://</span>
             </div>
         </div>
-        
         <!-- Live Statistics Inline Display -->
         <div class="live-stats-inline" id="inlineStats">
             <div class="stat-item">
@@ -1465,24 +1436,6 @@
                 </div>
             </div>
             
-            <div class="stats" id="stats">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>📊 Live Usage Statistics</h3>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <div id="connectionStatus" style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: #888;">
-                            <div id="statusIndicator" style="width: 8px; height: 8px; border-radius: 50%; background: #ff6b6b;"></div>
-                            <span id="statusText">Connecting...</span>
-                        </div>
-                        <button onclick="loadStats()" style="background: #4facfe; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;" onmouseover="this.style.background='#00f2fe'" onmouseout="this.style.background='#4facfe'">
-                            🔄 Refresh
-                        </button>
-                    </div>
-                </div>
-                <div id="statsContent">Loading...</div>
-                <div id="detailedStats" style="margin-top: 20px; display: none;">
-                    <!-- Detailed statistics will be populated here -->
-                </div>
-            </div>
         </div>
     </div>
 
@@ -1927,164 +1880,10 @@ https://www.theverge.com`
         }
 
         function updateStatsDisplay(data) {
-            // Update inline stats first
+            // Update inline stats only
             updateInlineStats(data);
-            
-            // Format numbers with commas
-            const formatNumber = (num) => num.toLocaleString();
-            
-            // Get current time for live indicator
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString();
-            
-            // Main statistics display
-            document.getElementById('statsContent').innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
-                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #4facfe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_conversions)}</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Total Conversions</div>
-                    </div>
-                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #00f2fe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_urls)}</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">URLs Processed</div>
-                    </div>
-                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${formatNumber(data.unique_users)}</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Unique Users</div>
-                    </div>
-                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #ff6b6b; font-size: 18px; font-weight: bold;">${data.success_rate}%</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Success Rate</div>
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
-                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_conversions)}</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Conversions</div>
-                    </div>
-                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_urls)}</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's URLs</div>
-                    </div>
-                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_unique_users)}</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Users</div>
-                    </div>
-                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${data.avg_processing_time}ms</div>
-                        <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Avg Processing</div>
-                    </div>
-                </div>
-                <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 6px; padding: 10px; margin-top: 10px;">
-                    <div style="color: #28a745; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                        ${isConnected ? '🔴 LIVE' : '⚪ OFFLINE'} • Last updated: ${timeStr}
-                    </div>
-                </div>
-            `;
-            
-            // Show detailed statistics
-            showDetailedStats(data);
-            
-            // Show recent activity if available
-            if (data.recent_activity && data.recent_activity.length > 0) {
-                showRecentActivity(data.recent_activity);
-            }
         }
 
-        function showDetailedStats(data) {
-            const detailedDiv = document.getElementById('detailedStats');
-            
-            let detailedHTML = `
-                <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
-                    <h4 style="color: #fff; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                        📊 Detailed Analytics
-                    </h4>
-            `;
-            
-            // Conversion breakdown
-            if (data.conversion_breakdown && data.conversion_breakdown.length > 0) {
-                detailedHTML += `
-                    <div style="margin-bottom: 20px;">
-                        <h5 style="color: #4facfe; margin-bottom: 10px; font-size: 13px;">Conversion Types</h5>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-                `;
-                data.conversion_breakdown.forEach(breakdown => {
-                    const icon = breakdown.type === 'quickadd' ? '⚡' : '📥';
-                    detailedHTML += `
-                        <div style="background: #2a2a2a; padding: 10px; border-radius: 6px; border: 1px solid #444;">
-                            <div style="color: #fff; font-size: 14px; font-weight: bold;">${icon} ${breakdown.count}</div>
-                            <div style="color: #888; font-size: 11px;">${breakdown.type}</div>
-                        </div>
-                    `;
-                });
-                detailedHTML += `</div></div>`;
-            }
-            
-            // Top folders
-            if (data.top_folders && data.top_folders.length > 0) {
-                detailedHTML += `
-                    <div style="margin-bottom: 20px;">
-                        <h5 style="color: #4facfe; margin-bottom: 10px; font-size: 13px;">Popular Folders</h5>
-                        <div style="display: grid; gap: 8px;">
-                `;
-                data.top_folders.slice(0, 5).forEach(folder => {
-                    detailedHTML += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #2a2a2a; border-radius: 6px; border: 1px solid #444;">
-                            <span style="color: #fff; font-size: 13px;">📁 ${folder.name}</span>
-                            <span style="color: #888; font-size: 12px;">${folder.count} conversions</span>
-                        </div>
-                    `;
-                });
-                detailedHTML += `</div></div>`;
-            }
-            
-            detailedHTML += `</div>`;
-            detailedDiv.innerHTML = detailedHTML;
-            detailedDiv.style.display = 'block';
-        }
-        
-        function showRecentActivity(activities) {
-            // Create or update recent activity section
-            let activitySection = document.getElementById('recentActivity');
-            if (!activitySection) {
-                activitySection = document.createElement('div');
-                activitySection.id = 'recentActivity';
-                activitySection.style.cssText = `
-                    margin-top: 20px;
-                    padding: 15px;
-                    background: #1a1a1a;
-                    border: 1px solid #333;
-                    border-radius: 8px;
-                `;
-                document.getElementById('stats').appendChild(activitySection);
-            }
-            
-            const recentCount = Math.min(5, activities.length);
-            let activityHTML = `
-                <h4 style="color: #fff; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    📈 Recent Activity (Last ${recentCount})
-                </h4>
-                <div style="display: grid; gap: 8px;">
-            `;
-            
-            activities.slice(0, recentCount).forEach(activity => {
-                const time = new Date(activity.timestamp).toLocaleString();
-                const typeIcon = activity.conversion_type === 'quickadd' ? '⚡' : '📥';
-                activityHTML += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #2a2a2a; border-radius: 6px; border: 1px solid #444;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 14px;">${typeIcon}</span>
-                            <span style="color: #fff; font-size: 13px;">${activity.url_count} URLs</span>
-                            <span style="color: #888; font-size: 12px;">• ${activity.folder_name}</span>
-                        </div>
-                        <span style="color: #888; font-size: 11px;">${time}</span>
-                    </div>
-                `;
-            });
-            
-            activityHTML += '</div>';
-            activitySection.innerHTML = activityHTML;
-        }
 
         // Popup functions
         function openStatsPopup() {
@@ -2125,57 +1924,70 @@ https://www.theverge.com`
             const timeStr = now.toLocaleTimeString();
             
             document.getElementById('popupStatsContent').innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #4facfe; font-size: 20px; font-weight: bold;">${formatNumber(data.total_conversions)}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: #4facfe; font-size: 1.2em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">📊 Live Usage Statistics</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div id="popupConnectionStatus" style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: #888;">
+                            <div id="popupStatusIndicator" style="width: 8px; height: 8px; border-radius: 50%; background: ${isConnected ? '#28a745' : '#ff6b6b'}; animation: ${isConnected ? 'pulse 2s infinite' : 'none'};"></div>
+                            <span id="popupStatusText">${isConnected ? 'Live' : 'Offline'}</span>
+                        </div>
+                        <button onclick="loadPopupStats()" style="background: #4facfe; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;" onmouseover="this.style.background='#00f2fe'" onmouseout="this.style.background='#4facfe'">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #4facfe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_conversions)}</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Total Conversions</div>
                     </div>
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #00f2fe; font-size: 20px; font-weight: bold;">${formatNumber(data.total_urls)}</div>
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #00f2fe; font-size: 18px; font-weight: bold;">${formatNumber(data.total_urls)}</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">URLs Processed</div>
                     </div>
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #ffd700; font-size: 20px; font-weight: bold;">${formatNumber(data.unique_users)}</div>
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #ffd700; font-size: 18px; font-weight: bold;">${formatNumber(data.unique_users)}</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Unique Users</div>
                     </div>
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #444;">
-                        <div style="color: #ff6b6b; font-size: 20px; font-weight: bold;">${data.success_rate}%</div>
+                    <div style="background: #2a2a2a; padding: 12px; border-radius: 8px; border: 1px solid #444;">
+                        <div style="color: #ff6b6b; font-size: 18px; font-weight: bold;">${data.success_rate}%</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Success Rate</div>
                     </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${formatNumber(data.today_conversions)}</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_conversions)}</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Conversions</div>
                     </div>
-                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${formatNumber(data.today_urls)}</div>
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_urls)}</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's URLs</div>
                     </div>
-                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${formatNumber(data.today_unique_users)}</div>
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${formatNumber(data.today_unique_users)}</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Today's Users</div>
                     </div>
-                    <div style="background: #2a4a2a; padding: 15px; border-radius: 8px; border: 1px solid #28a745;">
-                        <div style="color: #28a745; font-size: 18px; font-weight: bold;">${data.avg_processing_time}ms</div>
+                    <div style="background: #2a4a2a; padding: 12px; border-radius: 8px; border: 1px solid #28a745;">
+                        <div style="color: #28a745; font-size: 16px; font-weight: bold;">${data.avg_processing_time}ms</div>
                         <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Avg Processing</div>
                     </div>
                 </div>
                 
-                <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 6px; padding: 15px; margin-bottom: 20px;">
-                    <div style="color: #28a745; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                <div style="background: #1a3a1a; border: 1px solid #28a745; border-radius: 6px; padding: 10px; margin-top: 10px; margin-bottom: 20px;">
+                    <div style="color: #28a745; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                         ${isConnected ? '🔴 LIVE' : '⚪ OFFLINE'} • Last updated: ${timeStr}
                     </div>
                 </div>
                 
                 ${data.recent_activity && data.recent_activity.length > 0 ? `
-                    <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px;">
+                    <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-top: 20px;">
                         <h4 style="color: #fff; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                            📈 Recent Activity (Last 10)
+                            📈 Recent Activity (Last 15)
                         </h4>
                         <div style="display: grid; gap: 8px;">
-                            ${data.recent_activity.slice(0, 10).map(activity => {
+                            ${data.recent_activity.slice(0, 15).map(activity => {
                                 const time = new Date(activity.timestamp).toLocaleString();
                                 const typeIcon = activity.conversion_type === 'quickadd' ? '⚡' : '📥';
                                 return `
@@ -2190,6 +2002,42 @@ https://www.theverge.com`
                                 `;
                             }).join('')}
                         </div>
+                    </div>
+                ` : ''}
+                
+                ${data.conversion_breakdown && data.conversion_breakdown.length > 0 ? `
+                    <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-top: 20px;">
+                        <h4 style="color: #fff; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            📊 Detailed Analytics
+                        </h4>
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="color: #4facfe; margin-bottom: 10px; font-size: 13px;">Conversion Types</h5>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                                ${data.conversion_breakdown.map(breakdown => {
+                                    const icon = breakdown.type === 'quickadd' ? '⚡' : '📥';
+                                    return `
+                                        <div style="background: #2a2a2a; padding: 10px; border-radius: 6px; border: 1px solid #444;">
+                                            <div style="color: #fff; font-size: 14px; font-weight: bold;">${icon} ${breakdown.count}</div>
+                                            <div style="color: #888; font-size: 11px;">${breakdown.type}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        
+                        ${data.top_folders && data.top_folders.length > 0 ? `
+                            <div style="margin-bottom: 20px;">
+                                <h5 style="color: #4facfe; margin-bottom: 10px; font-size: 13px;">Popular Folders</h5>
+                                <div style="display: grid; gap: 8px;">
+                                    ${data.top_folders.slice(0, 5).map(folder => `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #2a2a2a; border-radius: 6px; border: 1px solid #444;">
+                                            <span style="color: #fff; font-size: 13px;">📁 ${folder.name}</span>
+                                            <span style="color: #888; font-size: 12px;">${folder.count} conversions</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 ` : ''}
             `;
