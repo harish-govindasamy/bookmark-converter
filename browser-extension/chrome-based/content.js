@@ -2,6 +2,8 @@
 // Professional bookmark integration with comprehensive error handling
 
 console.log('🚀 Bookmark Converter Pro content script loaded');
+console.log('Content script running on:', window.location.href);
+console.log('Chrome runtime available:', typeof chrome !== 'undefined' && chrome.runtime);
 
 // Inject bookmark button into pages
 function injectBookmarkButton() {
@@ -453,30 +455,41 @@ window.addEventListener('message', function(event) {
         
         if (action === 'importBookmarks' || action === 'exportBookmarks') {
             console.log('Forwarding to background script:', { action, data });
-            // Forward to background script
-            chrome.runtime.sendMessage({
-                action: action,
-                data: data
-            }, (response) => {
-                console.log('Background script response:', response);
-                // Check for errors
-                if (chrome.runtime.lastError) {
-                    console.error('Extension communication error:', chrome.runtime.lastError);
-                    window.postMessage({
-                        type: 'BOOKMARK_CONVERTER_RESPONSE',
-                        success: false,
-                        message: 'Extension communication failed: ' + chrome.runtime.lastError.message
-                    }, '*');
-                } else {
-                    // Send response back to web app
-                    window.postMessage({
-                        type: 'BOOKMARK_CONVERTER_RESPONSE',
-                        success: response ? response.success : false,
-                        message: response ? response.message : 'Extension communication failed',
-                        data: response ? response.data : null
-                    }, '*');
-                }
-            });
+            
+            // Check if we have access to chrome.runtime
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+                // Forward to background script
+                chrome.runtime.sendMessage({
+                    action: action,
+                    data: data
+                }, (response) => {
+                    console.log('Background script response:', response);
+                    // Check for errors
+                    if (chrome.runtime.lastError) {
+                        console.error('Extension communication error:', chrome.runtime.lastError);
+                        window.postMessage({
+                            type: 'BOOKMARK_CONVERTER_RESPONSE',
+                            success: false,
+                            message: 'Extension communication failed: ' + chrome.runtime.lastError.message
+                        }, '*');
+                    } else {
+                        // Send response back to web app
+                        window.postMessage({
+                            type: 'BOOKMARK_CONVERTER_RESPONSE',
+                            success: response ? response.success : false,
+                            message: response ? response.message : 'Extension communication failed',
+                            data: response ? response.data : null
+                        }, '*');
+                    }
+                });
+            } else {
+                console.error('chrome.runtime not available');
+                window.postMessage({
+                    type: 'BOOKMARK_CONVERTER_RESPONSE',
+                    success: false,
+                    message: 'Extension runtime not available'
+                }, '*');
+            }
         }
     }
 });
