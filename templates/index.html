@@ -2550,72 +2550,39 @@ https://www.theverge.com`
                     return;
                 }
                 
-                // Method 1.5: Try to detect extension by checking for extension-specific global variables
+                // Method 2: Try to detect extension by checking for extension-specific global variables
                 if (window.bookmarkConverter) {
                     resolve(true);
                     return;
                 }
                 
-                // Method 2: Try to communicate with extension
-                if (typeof chrome !== 'undefined' && chrome.runtime) {
-                    // Try multiple extension IDs for different browsers
-                    const extensionIds = [
-                        'com.bookmarkconverter.pro',
-                        'bookmark-converter-pro@harish-govindasamy.github.io',
-                        'bookmark-converter-pro'
-                    ];
-                    
-                    let attempts = 0;
-                    const tryExtension = () => {
-                        if (attempts >= extensionIds.length) {
-                            resolve(false);
-                            return;
-                        }
-                        
-                        chrome.runtime.sendMessage(extensionIds[attempts], {action: 'ping'}, (response) => {
-                            if (chrome.runtime.lastError) {
-                                attempts++;
-                                tryExtension();
-                            } else {
-                                resolve(!!response);
-                            }
-                        });
+                // Method 3: Try to communicate with extension via content script
+                if (typeof window.postMessage !== 'undefined') {
+                    // Send message to content script
+                    const message = {
+                        type: 'BOOKMARK_CONVERTER_PING',
+                        action: 'ping'
                     };
                     
-                    tryExtension();
-                } else if (typeof browser !== 'undefined' && browser.runtime) {
-                    // Firefox extension detection
-                    const extensionIds = [
-                        'bookmark-converter-pro@harish-govindasamy.github.io',
-                        'com.bookmarkconverter.pro'
-                    ];
+                    window.postMessage(message, '*');
                     
-                    let attempts = 0;
-                    const tryExtension = () => {
-                        if (attempts >= extensionIds.length) {
-                            resolve(false);
-                            return;
+                    // Listen for response
+                    const handleResponse = (event) => {
+                        if (event.data && event.data.type === 'BOOKMARK_CONVERTER_RESPONSE') {
+                            window.removeEventListener('message', handleResponse);
+                            resolve(event.data.success);
                         }
-                        
-                        browser.runtime.sendMessage(extensionIds[attempts], {action: 'ping'}).then(() => {
-                            resolve(true);
-                        }).catch(() => {
-                            attempts++;
-                            tryExtension();
-                        });
                     };
                     
-                    tryExtension();
-                } else if (typeof safari !== 'undefined' && safari.extension) {
-                    // Safari extension detection
-                    try {
-                        safari.extension.dispatchMessage('webAppMessage', {action: 'ping'});
-                        resolve(true);
-                    } catch (error) {
+                    window.addEventListener('message', handleResponse);
+                    
+                    // Timeout after 1 second
+                    setTimeout(() => {
+                        window.removeEventListener('message', handleResponse);
                         resolve(false);
-                    }
+                    }, 1000);
                 } else {
-                    // Method 3: Check for extension-specific global variables
+                    // Fallback: Check for extension-specific global variables
                     setTimeout(() => {
                         resolve(!!window.bookmarkConverterExtension || !!window.bookmarkConverter);
                     }, 100);
@@ -2625,6 +2592,7 @@ https://www.theverge.com`
 
         function sendMessageToExtension(action) {
             const message = {
+                type: 'BOOKMARK_CONVERTER_MESSAGE',
                 action: action,
                 data: {
                     urls: document.getElementById('urls').value,
@@ -2632,125 +2600,34 @@ https://www.theverge.com`
                 }
             };
 
-            if (typeof chrome !== 'undefined' && chrome.runtime) {
-                // First try to detect the extension ID
-                detectExtensionId().then((extensionId) => {
-                    if (extensionId) {
-                        // Use the detected extension ID
-                        chrome.runtime.sendMessage(extensionId, message, (response) => {
-                            if (chrome.runtime.lastError) {
-                                alert('❌ Extension not responding. Please make sure the extension is enabled.');
-                            } else {
-                                if (response && response.success) {
-                                    alert('✅ ' + response.message);
-                                    
-                                    // If exporting, update the textarea with the exported URLs
-                                    if (action === 'exportBookmarks' && response.data && response.data.urls) {
-                                        document.getElementById('urls').value = response.data.urls;
-                                    }
-                                } else {
-                                    alert('❌ Error: ' + (response ? response.message : 'Extension communication failed'));
-                                }
-                            }
-                        });
+            // Send message to content script via postMessage
+            window.postMessage(message, '*');
+            
+            // Listen for response
+            const handleResponse = (event) => {
+                if (event.data && event.data.type === 'BOOKMARK_CONVERTER_RESPONSE') {
+                    window.removeEventListener('message', handleResponse);
+                    
+                    if (event.data.success) {
+                        alert('✅ ' + event.data.message);
+                        
+                        // If exporting, update the textarea with the exported URLs
+                        if (action === 'exportBookmarks' && event.data.data && event.data.data.urls) {
+                            document.getElementById('urls').value = event.data.data.urls;
+                        }
                     } else {
-                        // Fallback: try multiple extension IDs
-                        const extensionIds = [
-                            'com.bookmarkconverter.pro',
-                            'bookmark-converter-pro@harish-govindasamy.github.io',
-                            'bookmark-converter-pro',
-                            'bookmark-converter-pro-chrome',
-                            'bookmark-converter-pro-edge'
-                        ];
-                        
-                        let attempts = 0;
-                        const tryExtension = () => {
-                            if (attempts >= extensionIds.length) {
-                                alert('❌ Extension not found. Please make sure the extension is installed and enabled.');
-                                return;
-                            }
-                            
-                            chrome.runtime.sendMessage(extensionIds[attempts], message, (response) => {
-                                if (chrome.runtime.lastError) {
-                                    attempts++;
-                                    tryExtension();
-                                } else {
-                                    if (response && response.success) {
-                                        alert('✅ ' + response.message);
-                                        
-                                        // If exporting, update the textarea with the exported URLs
-                                        if (action === 'exportBookmarks' && response.data && response.data.urls) {
-                                            document.getElementById('urls').value = response.data.urls;
-                                        }
-                                    } else {
-                                        alert('❌ Error: ' + (response ? response.message : 'Extension communication failed'));
-                                    }
-                                }
-                            });
-                        };
-                        
-                        tryExtension();
+                        alert('❌ Error: ' + (event.data.message || 'Extension communication failed'));
                     }
-                });
-            } else if (typeof browser !== 'undefined' && browser.runtime) {
-                // Firefox extension communication
-                const extensionIds = [
-                    'bookmark-converter-pro@harish-govindasamy.github.io',
-                    'com.bookmarkconverter.pro'
-                ];
-                
-                let attempts = 0;
-                const tryExtension = () => {
-                    if (attempts >= extensionIds.length) {
-                        alert('❌ Extension not found or not responding. Please make sure the extension is installed and enabled.');
-                        return;
-                    }
-                    
-                    browser.runtime.sendMessage(extensionIds[attempts], message).then((response) => {
-                        if (response && response.success) {
-                            alert('✅ ' + response.message);
-                            
-                            // If exporting, update the textarea with the exported URLs
-                            if (action === 'exportBookmarks' && response.data && response.data.urls) {
-                                document.getElementById('urls').value = response.data.urls;
-                            }
-                        } else {
-                            alert('❌ Error: ' + (response ? response.message : 'Extension communication failed'));
-                        }
-                    }).catch((error) => {
-                        attempts++;
-                        tryExtension();
-                    });
-                };
-                
-                tryExtension();
-            } else if (typeof safari !== 'undefined' && safari.extension) {
-                // Safari extension communication
-                try {
-                    safari.extension.dispatchMessage('webAppMessage', message);
-                    
-                    // Listen for response
-                    safari.extension.addEventListener('message', function(event) {
-                        if (event.name === 'webAppResponse') {
-                            const response = event.message;
-                            if (response && response.success) {
-                                alert('✅ ' + response.message);
-                                
-                                // If exporting, update the textarea with the exported URLs
-                                if (action === 'exportBookmarks' && response.data && response.data.urls) {
-                                    document.getElementById('urls').value = response.data.urls;
-                                }
-                            } else {
-                                alert('❌ Error: ' + (response ? response.message : 'Extension communication failed'));
-                            }
-                        }
-                    });
-                } catch (error) {
-                    alert('❌ Error communicating with Safari extension: ' + error.message);
                 }
-            } else {
-                alert('❌ Extension communication not available');
-            }
+            };
+            
+            window.addEventListener('message', handleResponse);
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                window.removeEventListener('message', handleResponse);
+                alert('❌ Extension not responding. Please make sure the extension is installed and enabled.');
+            }, 5000);
         }
 
         // Enhanced extension detection that tries to find the actual extension

@@ -430,6 +430,44 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+// Listen for messages from web app
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'BOOKMARK_CONVERTER_PING') {
+        // Respond to ping
+        window.postMessage({
+            type: 'BOOKMARK_CONVERTER_RESPONSE',
+            success: true,
+            message: 'Extension detected'
+        }, '*');
+    } else if (event.data && event.data.type === 'BOOKMARK_CONVERTER_MESSAGE') {
+        // Handle web app messages
+        const { action, data } = event.data;
+        
+        if (action === 'importBookmarks' || action === 'exportBookmarks') {
+            // Forward to background script
+            browser.runtime.sendMessage({
+                action: action,
+                data: data
+            }).then((response) => {
+                // Send response back to web app
+                window.postMessage({
+                    type: 'BOOKMARK_CONVERTER_RESPONSE',
+                    success: response ? response.success : false,
+                    message: response ? response.message : 'Extension communication failed',
+                    data: response ? response.data : null
+                }, '*');
+            }).catch((error) => {
+                // Send error response back to web app
+                window.postMessage({
+                    type: 'BOOKMARK_CONVERTER_RESPONSE',
+                    success: false,
+                    message: 'Extension communication failed: ' + error.message
+                }, '*');
+            });
+        }
+    }
+});
+
 // Add page info to window for easy access
 window.bookmarkConverter = {
     bookmarkCurrentPage: bookmarkCurrentPage,
